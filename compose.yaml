@@ -1,0 +1,7 @@
+﻿services:
+  talentai:
+    image: talentai
+    build:
+      context: .
+      dockerfile: Dockerfile
+
