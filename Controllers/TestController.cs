@@ -15,9 +15,14 @@ public class TestController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult TestConnection()
+    public async Task<IActionResult> TestConnection()
     {
-        var collections = _context.Users.Database.ListCollectionNames().ToList();
+        var collections = new List<string>();
+        using var cursor = await _context.Users.Database.ListCollectionNamesAsync();
+        while (await cursor.MoveNextAsync())
+        {
+            collections.AddRange(cursor.Current);
+        }
         return Ok(new { message = "Mongo Connected", collections });
     }
 }
