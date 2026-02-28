@@ -1,0 +1,49 @@
+@{
+    // Find out if the HR explicitly has Profile Setup required from context.
+    // If not injected, assume false (could be standard layout check).
+    // The controller protects endpoints, this just hides sidebar elements to reduce confusion.
+    var currentPath = Context.Request.Path.Value?.ToLower() ?? "";
+    bool requiresSetup = currentPath.Contains("/update-profile"); 
+}
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" stroke="url(#grad)" stroke-width="2" fill="none"/>
+                <path d="M16 8L22 11.5V18.5L16 22L10 18.5V11.5L16 8Z" fill="url(#grad)"/>
+                <defs>
+                    <linearGradient id="grad" x1="4" y1="2" x2="28" y2="30">
+                        <stop stop-color="#818cf8"/>
+                        <stop offset="1" stop-color="#c084fc"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        <h1 style="font-size: 1.25rem;">TalentAI <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: 0.5rem;">HR</span></h1>
+    </div>
+
+    <ul class="nav-links">
+        @if (requiresSetup)
+        {
+            <li>
+                <a href="/hr/update-profile" class="@(currentPath.Contains("/update-profile") ? "active" : "")">Profile Verification</a>
+            </li>
+        }
+        else
+        {
+            <li>
+                <a href="/hr" class="@(currentPath == "/hr" || currentPath.StartsWith("/hr/job") ? "active" : "")">Jobs Feed</a>
+            </li>
+            <li>
+                <a href="/hr/add-job" class="@(currentPath.Contains("/add-job") ? "active" : "")">Add Job</a>
+            </li>
+            <li>
+                <a href="/hr/update-profile" class="@(currentPath.Contains("/update-profile") ? "active" : "")">Update Profile</a>
+            </li>
+        }
+    </ul>
+
+    <!-- Logout redirects to home with frontend script clearing session -->
+    <a href="/" onclick="fetch('/api/auth/logout', {method:'POST'}); sessionStorage.clear(); localStorage.clear();" class="logout-btn">Sign Out</a>
+</aside>

@@ -1,5 +1,6 @@
 using MongoDB.Driver;
 using TalentAI.Data;
+using TalentAI.DTOs;
 using TalentAI.Models;
 
 namespace TalentAI.Services;
@@ -36,6 +37,7 @@ public class UserService : IUserService
             LastName = lastName,
             MatriculeRH = matriculeRh,
             Role = "HR",
+            RequiresProfileUpdate = true,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -47,5 +49,24 @@ public class UserService : IUserService
     {
         var result = await _context.Users.DeleteOneAsync(u => u.Id == id);
         return result.DeletedCount > 0;
+    }
+
+    public async Task<User?> GetHRByIdAsync(string id)
+    {
+        return await _context.Users.Find(u => u.Id == id && u.Role == "HR").FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> UpdateHRProfileAsync(string id, HRProfileUpdateDto dto)
+    {
+        var update = Builders<User>.Update
+            .Set(u => u.FirstName, dto.FirstName)
+            .Set(u => u.LastName, dto.LastName)
+            .Set(u => u.MatriculeRH, dto.MatriculeRH)
+            .Set(u => u.Email, dto.Email)
+            .Set(u => u.Password, dto.Password)
+            .Set(u => u.RequiresProfileUpdate, false);
+
+        var result = await _context.Users.UpdateOneAsync(u => u.Id == id && u.Role == "HR", update);
+        return result.ModifiedCount > 0;
     }
 }

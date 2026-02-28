@@ -169,7 +169,10 @@
         {
             <partial name="_AdminSidebar" />
         }
-        
+        else if (Context.Session.GetString("Role") == "HR")
+        {
+            <partial name="_HRSidebar" />
+        }      
         <main class="main-content">
             @RenderBody()
         </main>

@@ -1,0 +1,52 @@
+@using TalentAI.Models
+@model List<Job>
+@{
+    ViewData["Title"] = "HR Dashboard - Jobs Feed";
+}
+
+<div class="page-header">
+    <h2>Jobs Feed</h2>
+    <p>Manage active job postings and view candidate applications.</p>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="response-message success" style="margin-bottom: 2rem;">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (Model.Count == 0)
+{
+    <div style="padding: 3rem; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+        <h3 style="margin-top: 0; color: var(--text-muted);">No jobs posted yet.</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Create your first job listing to start attracting candidates.</p>
+        <a href="/hr/add-job" class="btn-primary" style="display: inline-flex;">Create Job Listing</a>
+    </div>
+}
+else
+{
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+        @foreach (var job in Model)
+        {
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                
+                <div>
+                    <h3 style="margin-top: 0; margin-bottom: 0.5rem; font-size: 1.25rem;">@job.Title</h3>
+                    <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem; display: flex; gap: 1rem;">
+                        <span>Posted by: @job.PostedByEmail</span>
+                        <span>|</span>
+                        <span>Deadline: @job.Deadline.ToString("MMM dd, yyyy")</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.85rem; color: var(--accent);">Posted @job.CreatedAt.ToString("MMM dd")</span>
+                    <a href="/hr/job/@job.Id" style="color: var(--secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                        View Applications &rarr;
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}

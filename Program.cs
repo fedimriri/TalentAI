@@ -11,6 +11,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IJobService, JobService>();
 
 builder.Services.AddControllersWithViews();
 

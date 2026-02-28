@@ -15,5 +15,6 @@ public class User
     public string? LastName { get; set; }
     public string? MatriculeRH { get; set; }
     public string Role { get; set; } = "Candidate";
+    public bool RequiresProfileUpdate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

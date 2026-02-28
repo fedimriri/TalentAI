@@ -1,0 +1,69 @@
+@using TalentAI.DTOs
+@model HRProfileUpdateDto
+@{
+    ViewData["Title"] = "Update HR Profile";
+    // Check if they came from the enforced setup redirect vs manually navigating later.
+    var currentPath = Context.Request.Path.Value?.ToLower() ?? "";
+    bool isSetupFlow = currentPath.Contains("/update-profile");
+}
+
+<div class="page-header">
+    <h2>Profile Verification Required</h2>
+    <p>Please complete your associated HR Profile data and specify a secure permanent password to access the Dashboard.</p>
+</div>
+
+<div class="auth-card" style="margin: 0; max-width: 600px;">
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="response-message success" style="margin-bottom: 2rem; margin-top: 0;">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <form method="post" asp-controller="HR" asp-action="UpdateProfile" class="auth-form active">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+                <label asp-for="FirstName">First Name</label>
+                <input asp-for="FirstName" type="text" placeholder="John" required />
+                <span asp-validation-for="FirstName" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="LastName">Last Name</label>
+                <input asp-for="LastName" type="text" placeholder="Doe" required />
+                <span asp-validation-for="LastName" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="MatriculeRH">HR Matricule</label>
+            <input asp-for="MatriculeRH" type="text" placeholder="e.g. HR-1042" required />
+            <span asp-validation-for="MatriculeRH" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Email">Email Address</label>
+            <input asp-for="Email" type="email" required autocomplete="email" />
+            <span asp-validation-for="Email" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Password">New Secure Password</label>
+            <input asp-for="Password" type="password" placeholder="Min. 6 characters" required minlength="6" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+        
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="response-message error" style="margin-top: 1.5rem;">
+                Failed to persist changes. Please ensure all inputs are structurally valid.
+            </div>
+        }
+
+        <button type="submit" class="btn-primary" style="margin-top: 2rem;">
+            <span>Save Profile & Continue</span>
+        </button>
+    </form>
+</div>

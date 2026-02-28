@@ -1,0 +1,54 @@
+@using TalentAI.DTOs
+@model CreateJobDto
+@{
+    ViewData["Title"] = "Create New Job Listing";
+}
+
+<div class="page-header">
+    <a href="/hr" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        &larr; Back to Jobs Feed
+    </a>
+    <h2>Create New Job Listing</h2>
+    <p>Post a new open position to attract candidate applications immediately.</p>
+</div>
+
+<div class="auth-card" style="margin: 0; max-width: 800px;">
+    
+    <form method="post" asp-controller="HR" asp-action="AddJob" class="auth-form active">
+        
+        <div class="form-group">
+            <label asp-for="Title">Job Title</label>
+            <input asp-for="Title" type="text" placeholder="e.g. Senior Backend Engineer" required />
+            <span asp-validation-for="Title" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+            <label asp-for="Description">Full Description</label>
+            <textarea asp-for="Description" rows="5" placeholder="Describe the role and responsibilities..." required style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 0.75rem; font-family: inherit; resize: vertical; margin-top: 0.5rem;"></textarea>
+            <span asp-validation-for="Description" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+            <label asp-for="Requirements">Key Requirements</label>
+            <textarea asp-for="Requirements" rows="4" placeholder="List the core qualifications..." required style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 0.75rem; font-family: inherit; resize: vertical; margin-top: 0.5rem;"></textarea>
+            <span asp-validation-for="Requirements" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+            <label asp-for="Deadline">Application Deadline</label>
+            <input asp-for="Deadline" type="date" required style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 0.75rem; font-family: inherit; margin-top: 0.5rem; color-scheme: dark;" />
+            <span asp-validation-for="Deadline" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="response-message error" style="margin-top: 1.5rem;">
+                Please correct the errors above and try again.
+            </div>
+        }
+
+        <button type="submit" class="btn-primary" style="margin-top: 2rem;">
+            <span>Publish Job Listing</span>
+        </button>
+    </form>
+</div>

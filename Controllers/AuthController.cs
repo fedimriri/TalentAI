@@ -58,7 +58,14 @@ public class AuthController : ControllerBase
         }
         else if (user.Role == "HR")
         {
-            redirectUrl = "/hr";
+            if (user.RequiresProfileUpdate)
+            {
+                redirectUrl = "/hr/update-profile";
+            }
+            else
+            {
+                redirectUrl = "/hr";
+            }
         }
 
         return Ok(new
