@@ -10,8 +10,16 @@ builder.Services.Configure<MongoSettings>(
 builder.Services.AddSingleton<MongoDbContext>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -40,6 +48,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors();
+app.UseSession();
 
 // Serve static files from wwwroot
 app.UseDefaultFiles();

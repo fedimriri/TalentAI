@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TalentAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/style.css" />
+    <style>
+        /* Specific layout overrides for the dashboards */
+        body {
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        /* Dashboard Container */
+        .dashboard-container {
+            display: flex;
+            width: 100vw;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .sidebar .brand {
+            margin-bottom: 3rem;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .nav-links a.active {
+            background: rgba(129, 140, 248, 0.15);
+            color: #fff;
+            box-shadow: inset 3px 0 0 var(--accent);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            padding: 0.8rem;
+            border-radius: var(--radius);
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(248, 113, 113, 0.2);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+        }
+        
+        /* Table Styles for Dashboard */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .data-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(255,255,255, 0.03);
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .badge-admin { background: rgba(192, 132, 252, 0.15); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.3); }
+        .badge-hr { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-candidate { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="dashboard-container">
+        <!-- Render Role-Specific Sidebar if Available -->
+        @if (Context.Session.GetString("Role") == "Admin")
+        {
+            <partial name="_AdminSidebar" />
+        }
+        
+        <main class="main-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

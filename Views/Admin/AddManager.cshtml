@@ -1,0 +1,65 @@
+@using TalentAI.DTOs
+@model CreateHRDto
+@{
+    ViewData["Title"] = "Add Manager";
+}
+
+<div class="page-header">
+    <h2>Add HR Manager</h2>
+    <p>Create a new Human Resources manager account to help manage jobs and applications.</p>
+</div>
+
+<div class="auth-card" style="margin: 0; max-width: 500px;">
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="response-message success" style="margin-top: 0; margin-bottom: 1.5rem;">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <form method="post" asp-controller="Admin" asp-action="AddManager" class="auth-form active">
+        
+        <div class="form-group">
+            <label asp-for="FirstName">First Name</label>
+            <input asp-for="FirstName" type="text" placeholder="John" required />
+            <span asp-validation-for="FirstName" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="LastName">Last Name</label>
+            <input asp-for="LastName" type="text" placeholder="Doe" required />
+            <span asp-validation-for="LastName" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="MatriculeRH">HR Matricule</label>
+            <input asp-for="MatriculeRH" type="text" placeholder="e.g. HR-1042" required />
+            <span asp-validation-for="MatriculeRH" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Email">Email</label>
+            <input asp-for="Email" type="email" placeholder="manager@talentai.com" required autocomplete="email" />
+            <span asp-validation-for="Email" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Password">Password</label>
+            <input asp-for="Password" type="password" placeholder="Min. 6 characters" required minlength="6" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+        
+        <!-- Global Validation Error fallback -->
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Email"]?.Errors.Count > 0)
+        {
+            <div class="response-message error">
+                @ViewData.ModelState["Email"].Errors[0].ErrorMessage
+            </div>
+        }
+
+        <button type="submit" class="btn-primary" style="margin-top: 1rem;">
+            <span>Create HR Account</span>
+        </button>
+    </form>
+</div>

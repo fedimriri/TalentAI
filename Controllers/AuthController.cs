@@ -45,9 +45,26 @@ public class AuthController : ControllerBase
         if (user == null)
             return Unauthorized(new { message = "Invalid email or password." });
 
+        // Set Session variables
+        HttpContext.Session.SetString("UserId", user.Id);
+        HttpContext.Session.SetString("Email", user.Email);
+        HttpContext.Session.SetString("Role", user.Role);
+
+        // Determine redirect url based on role
+        string redirectUrl = "/candidate"; // default for Phase 2 implementation if active
+        if (user.Role == "Admin")
+        {
+            redirectUrl = "/admin";
+        }
+        else if (user.Role == "HR")
+        {
+            redirectUrl = "/hr";
+        }
+
         return Ok(new
         {
             message = "Login successful.",
+            redirectUrl = redirectUrl,
             user = new
             {
                 user.Id,

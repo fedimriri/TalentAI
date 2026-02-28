@@ -1,0 +1,231 @@
+@using TalentAI.Models
+@model List<User>
+@{
+    ViewData["Title"] = "Platform Users";
+}
+
+<style>
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        width: 100%;
+        max-width: 500px;
+        padding: 2rem;
+        position: relative;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    
+    .modal-overlay.active .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 1.5rem; right: 1.5rem;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.5rem;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .modal-close:hover {
+        color: var(--text);
+    }
+
+    .detail-row {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .detail-row:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .detail-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.3rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .detail-value {
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    .tr-clickable {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+</style>
+
+<div class="page-header">
+    <h2>Platform Users</h2>
+    <p>View and manage all registered users within TalentAI. Click on a user to view full details.</p>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="response-message success" style="margin-bottom: 1.5rem;">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="response-message error" style="margin-bottom: 1.5rem;">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div style="overflow-x: auto;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Role</th>
+                <th>Registration Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.OrderByDescending(u => u.CreatedAt))
+            {
+                var fullName = string.IsNullOrEmpty(user.FirstName) && string.IsNullOrEmpty(user.LastName) 
+                    ? "N/A" 
+                    : $"{user.FirstName} {user.LastName}";
+
+                <tr class="tr-clickable" onclick="openModal('@user.Id', '@fullName.Replace("'", "\\'")', '@user.Email.Replace("'", "\\'")', '@user.Role', '@user.CreatedAt.ToString("MMM dd, yyyy HH:mm")', '@(user.MatriculeRH?.Replace("'", "\\'") ?? "N/A")')">
+                    <td>@fullName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        @switch (user.Role)
+                        {
+                            case "Admin":
+                                <span class="badge badge-admin">@user.Role</span>
+                                break;
+                            case "HR":
+                                <span class="badge badge-hr">@user.Role</span>
+                                break;
+                            default:
+                                <span class="badge badge-candidate">@user.Role</span>
+                                break;
+                        }
+                    </td>
+                    <td>@user.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    @if(Model.Count == 0)
+    {
+        <div style="padding: 2rem; text-align: center; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius);">
+            No users found.
+        </div>
+    }
+</div>
+
+<!-- User Details Modal -->
+<div class="modal-overlay" id="userModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal(event)">&times;</button>
+        <h3 style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem;">User Details</h3>
+        
+        <div class="detail-row">
+            <div class="detail-label">Full Name</div>
+            <div class="detail-value" id="modalName">N/A</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Email Address</div>
+            <div class="detail-value" id="modalEmail">N/A</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Role</div>
+            <div class="detail-value" id="modalRole">N/A</div>
+        </div>
+
+        <div class="detail-row" id="matriculeContainer">
+            <div class="detail-label">HR Matricule</div>
+            <div class="detail-value" id="modalMatricule">N/A</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Registration Date</div>
+            <div class="detail-value" id="modalDate">N/A</div>
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(248, 113, 113, 0.2);">
+            <form id="deleteForm" method="post" action="" onsubmit="return confirm('Are you sure you want to permanently delete this account?');">
+                <button type="submit" style="width: 100%; background: rgba(248, 113, 113, 0.1); color: var(--error); border: 1px solid rgba(248, 113, 113, 0.2); padding: 0.8rem; border-radius: var(--radius); cursor: pointer; font-weight: 500; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(248, 113, 113, 0.2)'" onmouseout="this.style.background='rgba(248, 113, 113, 0.1)'">
+                    Delete Account
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal(id, name, email, role, date, matricule) {
+            document.getElementById('modalName').textContent = name;
+            document.getElementById('modalEmail').textContent = email;
+            document.getElementById('modalRole').textContent = role;
+            document.getElementById('modalDate').textContent = date;
+            
+            const matContainer = document.getElementById('matriculeContainer');
+            if (role === 'HR') {
+                matContainer.style.display = 'block';
+                document.getElementById('modalMatricule').textContent = matricule;
+            } else {
+                matContainer.style.display = 'none';
+            }
+
+            document.getElementById('deleteForm').action = '/admin/delete-user/' + id;
+            
+            const modal = document.getElementById('userModal');
+            modal.style.display = 'flex';
+            // Trigger reflow
+            void modal.offsetWidth;
+            modal.classList.add('active');
+        }
+
+        function closeModal(e) {
+            if (e) e.stopPropagation();
+            const modal = document.getElementById('userModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+    </script>
+}

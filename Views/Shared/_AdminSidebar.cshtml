@@ -1,0 +1,37 @@
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" stroke="url(#grad)" stroke-width="2" fill="none"/>
+                <path d="M16 8L22 11.5V18.5L16 22L10 18.5V11.5L16 8Z" fill="url(#grad)"/>
+                <defs>
+                    <linearGradient id="grad" x1="4" y1="2" x2="28" y2="30">
+                        <stop stop-color="#818cf8"/>
+                        <stop offset="1" stop-color="#c084fc"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        <h1 style="font-size: 1.25rem;">TalentAI</h1>
+    </div>
+
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    }
+
+    <ul class="nav-links">
+        <li>
+            <a href="/admin" class="@(currentController == "Admin" && currentAction == "Index" ? "active" : "")">Profile</a>
+        </li>
+        <li>
+            <a href="/admin/users" class="@(currentController == "Admin" && currentAction == "Users" ? "active" : "")">Users List</a>
+        </li>
+        <li>
+            <a href="/admin/add-manager" class="@(currentController == "Admin" && currentAction == "AddManager" ? "active" : "")">Add Manager (HR)</a>
+        </li>
+    </ul>
+
+    <!-- Logout redirects to home with frontend script clearing session -->
+    <a href="/" onclick="fetch('/api/auth/logout', {method:'POST'});" class="logout-btn">Sign Out</a>
+</aside>

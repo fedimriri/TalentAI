@@ -111,7 +111,10 @@ loginForm.addEventListener('submit', async (e) => {
         const { ok, data } = await apiCall('login', { email, password });
 
         if (ok) {
-            showMessage(`✓ Welcome back! Signed in as ${data.user.role}.`, 'success');
+            showMessage(`✓ Welcome back! Redirecting to your dashboard...`, 'success');
+            setTimeout(() => {
+                window.location.href = data.redirectUrl || '/';
+            }, 800);
         } else {
             showMessage(data.message || 'Invalid email or password.', 'error');
         }
