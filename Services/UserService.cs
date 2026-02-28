@@ -93,10 +93,11 @@ public class UserService : IUserService
             {
                 dtos.Add(new CandidateJobDto
                 {
+                    ApplicationId = app.Id!,
                     JobId = job.Id!,
                     JobTitle = job.Title,
                     AppliedAt = app.AppliedAt,
-                    Status = "Under Review" // Placeholder for Phase 2
+                    Status = app.Status ?? "Under Review"
                 });
             }
         }

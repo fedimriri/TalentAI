@@ -12,4 +12,6 @@ public interface IJobService
     Task<JobApplication?> ApplyForJobAsync(string jobId, string candidateId, string candidateEmail, string resumePath);
     Task<JobApplication?> GetApplicationByIdAsync(string applicationId);
     Task<bool> UpdateApplicationStatusAsync(string applicationId, string newStatus);
+    Task<bool> ReplaceResumeAsync(string applicationId, string newResumePath);
+    Task<bool> DeleteApplicationAsync(string applicationId);
 }

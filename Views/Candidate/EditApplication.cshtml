@@ -1,0 +1,56 @@
+@using TalentAI.Models
+@model JobApplication
+@{
+    ViewData["Title"] = "Replace Resume";
+    var jobTitle = ViewBag.JobTitle as string ?? "this position";
+    var currentResume = ViewBag.CurrentResume as string;
+}
+
+<div class="page-header">
+    <a href="/candidate" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        &larr; Back to Dashboard
+    </a>
+    <h2 style="margin-top: 0;">Replace Resume</h2>
+    <p>Upload a new resume for your <strong>@jobTitle</strong> application.</p>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="response-message error" style="margin-bottom: 1.5rem;">@TempData["ErrorMessage"]</div>
+}
+
+<div class="auth-card" style="margin: 0; max-width: 600px;">
+
+    @if (!string.IsNullOrEmpty(currentResume))
+    {
+        <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: var(--radius); border: 1px dashed rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <svg style="color: var(--text-muted);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">Current resume on file</span>
+            </div>
+            <a href="@currentResume" target="_blank" style="color: var(--secondary); text-decoration: none; font-size: 0.85rem; font-weight: 500;">View &rarr;</a>
+        </div>
+    }
+
+    <form method="post" enctype="multipart/form-data" action="/candidate/application/edit/@Model.Id" class="auth-form active">
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label>New Resume (PDF, DOCX)</label>
+            <div style="position: relative; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; width: 100%; border: 2px dashed rgba(255,255,255,0.1); border-radius: var(--radius); padding: 2rem; background: rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--secondary)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';">
+                
+                <input name="ResumeFile" type="file" accept=".pdf, .docx" required style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;" 
+                       onchange="document.getElementById('filename-display').innerText = this.files.length > 0 ? this.files[0].name : 'Browse to upload (Max 5MB)';" />
+                
+                <div style="text-align: center; pointer-events: none;">
+                    <svg style="margin-bottom: 0.5rem; color: var(--text-muted);" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <div id="filename-display" style="font-size: 0.95rem; color: var(--text); font-weight: 500;">Browse to upload (.pdf, .docx)</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Maximum file size: 5MB</div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 1rem;">
+            Replace Resume
+        </button>
+    </form>
+</div>

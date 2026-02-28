@@ -92,4 +92,37 @@ public class JobService : IJobService
         var result = await _context.JobApplications.UpdateOneAsync(a => a.Id == applicationId, update);
         return result.ModifiedCount > 0;
     }
+
+    public async Task<bool> ReplaceResumeAsync(string applicationId, string newResumePath)
+    {
+        var app = await GetApplicationByIdAsync(applicationId);
+        if (app == null) return false;
+
+        // Delete old file from disk
+        if (!string.IsNullOrEmpty(app.ResumeFilePath))
+        {
+            var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", app.ResumeFilePath.TrimStart('/'));
+            if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+        }
+
+        var update = Builders<JobApplication>.Update.Set(a => a.ResumeFilePath, newResumePath);
+        var result = await _context.JobApplications.UpdateOneAsync(a => a.Id == applicationId, update);
+        return result.ModifiedCount > 0;
+    }
+
+    public async Task<bool> DeleteApplicationAsync(string applicationId)
+    {
+        var app = await GetApplicationByIdAsync(applicationId);
+        if (app == null) return false;
+
+        // Delete resume file from disk
+        if (!string.IsNullOrEmpty(app.ResumeFilePath))
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", app.ResumeFilePath.TrimStart('/'));
+            if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+        }
+
+        var result = await _context.JobApplications.DeleteOneAsync(a => a.Id == applicationId);
+        return result.DeletedCount > 0;
+    }
 }
