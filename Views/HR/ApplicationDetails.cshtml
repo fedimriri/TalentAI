@@ -3,6 +3,24 @@
 @{
     ViewData["Title"] = "Application Details - " + Model.CandidateEmail;
     var jobTitle = ViewBag.JobTitle as string;
+
+    // Color-coded status helpers
+    string statusBg, statusColor, statusBorder;
+    switch (Model.Status)
+    {
+        case "Approved":
+            statusBg = "rgba(52, 211, 153, 0.15)"; statusColor = "#34d399"; statusBorder = "rgba(52, 211, 153, 0.3)";
+            break;
+        case "Rejected":
+            statusBg = "rgba(239, 68, 68, 0.15)"; statusColor = "#ef4444"; statusBorder = "rgba(239, 68, 68, 0.3)";
+            break;
+        case "Shortlisted":
+            statusBg = "rgba(250, 204, 21, 0.15)"; statusColor = "#facc15"; statusBorder = "rgba(250, 204, 21, 0.3)";
+            break;
+        default: // Under Review
+            statusBg = "rgba(192, 132, 252, 0.15)"; statusColor = "#e879f9"; statusBorder = "rgba(192, 132, 252, 0.3)";
+            break;
+    }
 }
 
 <div class="page-header">
@@ -12,6 +30,15 @@
     <h2 style="margin: 0; margin-bottom: 0.5rem; font-size: 2rem;">Application Review</h2>
     <p style="color: var(--text-muted);">Review candidate application data for <strong>@jobTitle</strong>.</p>
 </div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="response-message success" style="margin-bottom: 1.5rem;">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="response-message error" style="margin-bottom: 1.5rem;">@TempData["ErrorMessage"]</div>
+}
 
 <div style="display: grid; grid-template-columns: 1fr; gap: 2rem; max-width: 800px;">
     
@@ -31,13 +58,33 @@
 
             <div>
                 <strong style="display: block; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.25rem;">Current Status</strong>
-                <span style="background: rgba(192, 132, 252, 0.15); color: #e879f9; padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.9rem; border: 1px solid rgba(192, 132, 252, 0.3); display: inline-block; margin-top: 0.25rem;">
+                <span style="background: @statusBg; color: @statusColor; padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.9rem; border: 1px solid @statusBorder; display: inline-block; margin-top: 0.25rem;">
                     @Model.Status
                 </span>
             </div>
         </div>
 
-        <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+        <!-- Status Update Form -->
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--text); font-size: 1.1rem; margin-bottom: 1rem;">Update Status</h3>
+            <form method="post" action="/hr/application/update-status/@Model.Id" style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label style="display: block; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">New Status</label>
+                    <select name="newStatus" style="width: 100%; padding: 0.75rem 1rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem; cursor: pointer; appearance: auto;">
+                        <option value="Under Review" selected="@(Model.Status == "Under Review")">Under Review</option>
+                        <option value="Shortlisted" selected="@(Model.Status == "Shortlisted")">Shortlisted</option>
+                        <option value="Approved" selected="@(Model.Status == "Approved")">Approved</option>
+                        <option value="Rejected" selected="@(Model.Status == "Rejected")">Rejected</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="padding: 0.75rem 1.5rem; white-space: nowrap;">
+                    Update Status
+                </button>
+            </form>
+        </div>
+
+        <!-- Resume Section -->
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--text); font-size: 1.1rem; margin-bottom: 1rem;">Provided Resume</h3>
             
             @if (string.IsNullOrEmpty(Model.ResumeFilePath))

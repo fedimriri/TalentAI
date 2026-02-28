@@ -100,6 +100,26 @@ public class HRController : Controller
         return View(application);
     }
 
+    [HttpPost("application/update-status/{id}")]
+    public async Task<IActionResult> UpdateStatus(string id, string newStatus)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "HR" && role != "Admin") return Redirect("/");
+
+        var success = await _jobService.UpdateApplicationStatusAsync(id, newStatus);
+
+        if (success)
+        {
+            TempData["SuccessMessage"] = $"Application status updated to \"{newStatus}\".";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = "Failed to update status. Invalid status value.";
+        }
+
+        return Redirect($"/hr/application/{id}");
+    }
+
     [HttpGet("update-profile")]
     public async Task<IActionResult> UpdateProfile()
     {

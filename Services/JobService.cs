@@ -82,4 +82,14 @@ public class JobService : IJobService
             .Find(a => a.Id == applicationId)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<bool> UpdateApplicationStatusAsync(string applicationId, string newStatus)
+    {
+        var allowedStatuses = new[] { "Under Review", "Shortlisted", "Approved", "Rejected" };
+        if (!allowedStatuses.Contains(newStatus)) return false;
+
+        var update = Builders<JobApplication>.Update.Set(a => a.Status, newStatus);
+        var result = await _context.JobApplications.UpdateOneAsync(a => a.Id == applicationId, update);
+        return result.ModifiedCount > 0;
+    }
 }
