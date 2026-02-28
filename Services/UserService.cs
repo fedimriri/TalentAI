@@ -69,4 +69,38 @@ public class UserService : IUserService
         var result = await _context.Users.UpdateOneAsync(u => u.Id == id && u.Role == "HR", update);
         return result.ModifiedCount > 0;
     }
+
+    public async Task<User?> GetCandidateByIdAsync(string id)
+    {
+        return await _context.Users.Find(u => u.Id == id && u.Role == "Candidate").FirstOrDefaultAsync();
+    }
+
+    public async Task<List<CandidateJobDto>> GetAppliedJobsForCandidateAsync(string candidateId)
+    {
+        // Find all applications for this candidate
+        var applications = await _context.JobApplications
+            .Find(a => a.CandidateId == candidateId)
+            .SortByDescending(a => a.AppliedAt)
+            .ToListAsync();
+
+        var dtos = new List<CandidateJobDto>();
+
+        foreach (var app in applications)
+        {
+            // Fetch the corresponding job to get the title
+            var job = await _context.Jobs.Find(j => j.Id == app.JobId).FirstOrDefaultAsync();
+            if (job != null)
+            {
+                dtos.Add(new CandidateJobDto
+                {
+                    JobId = job.Id!,
+                    JobTitle = job.Title,
+                    AppliedAt = app.AppliedAt,
+                    Status = "Under Review" // Placeholder for Phase 2
+                });
+            }
+        }
+
+        return dtos;
+    }
 }

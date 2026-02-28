@@ -10,4 +10,6 @@ public interface IUserService
     Task<bool> DeleteUserAsync(string id);
     Task<User?> GetHRByIdAsync(string id);
     Task<bool> UpdateHRProfileAsync(string id, HRProfileUpdateDto dto);
+    Task<User?> GetCandidateByIdAsync(string id);
+    Task<List<CandidateJobDto>> GetAppliedJobsForCandidateAsync(string candidateId);
 }

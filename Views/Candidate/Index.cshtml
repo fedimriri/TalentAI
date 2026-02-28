@@ -1,0 +1,75 @@
+@using TalentAI.Models
+@using TalentAI.DTOs
+@model List<CandidateJobDto>
+@{
+    var candidate = ViewBag.Candidate as User;
+    ViewData["Title"] = "Candidate Dashboard";
+}
+
+<div class="page-header">
+    <h2>Welcome back!</h2>
+    <p>Manage your profile and track your job applications below.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+    
+    <!-- Profile Info -->
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem;">
+        <h3 style="margin-top: 0; color: var(--secondary); font-size: 1.1rem; margin-bottom: 1rem;">Profile Information</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; color: var(--text-muted);">
+            <div><strong style="color: var(--text);">Email:</strong> @candidate?.Email</div>
+            <div><strong style="color: var(--text);">Role:</strong> @candidate?.Role</div>
+            <div><strong style="color: var(--text);">Joined:</strong> @candidate?.CreatedAt.ToString("MMMM dd, yyyy")</div>
+        </div>
+    </div>
+
+    <!-- Applied Jobs -->
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; font-size: 1.25rem;">My Applications</h3>
+            <a href="/candidate/feed" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Find New Jobs</a>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div style="padding: 2.5rem; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; margin-top: 0;">You haven't applied to any jobs yet.</p>
+                <a href="/candidate/feed" style="color: var(--secondary); text-decoration: none; font-weight: 500;">Browse active job postings &rarr;</a>
+            </div>
+        }
+        else
+        {
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border);">
+                    <thead style="background: rgba(0,0,0,0.2); text-align: left; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                        <tr>
+                            <th style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);">Job Title</th>
+                            <th style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);">Date Applied</th>
+                            <th style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);">Status</th>
+                            <th style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var job in Model)
+                        {
+                            <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)';" onmouseout="this.style.background='transparent';">
+                                <td style="padding: 1rem 1.5rem; font-weight: 500;">@job.JobTitle</td>
+                                <td style="padding: 1rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">@job.AppliedAt.ToString("MMM dd, yyyy")</td>
+                                <td style="padding: 1rem 1.5rem;">
+                                    <span style="background: rgba(192, 132, 252, 0.15); color: #e879f9; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.8rem; border: 1px solid rgba(192, 132, 252, 0.3);">
+                                        @job.Status
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem 1.5rem; text-align: right;">
+                                    <a href="/candidate/job/@job.JobId" style="color: var(--secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">View &rarr;</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</div>

@@ -9,4 +9,5 @@ public interface IJobService
     Task<Job?> GetJobByIdAsync(string jobId);
     Task<Job> CreateJobAsync(CreateJobDto dto, string hrUserId, string hrEmail);
     Task<List<JobApplication>> GetApplicationsForJobAsync(string jobId);
+    Task<JobApplication?> ApplyForJobAsync(string jobId, string candidateId, string candidateEmail, string? resumeId = null);
 }

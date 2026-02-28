@@ -49,4 +49,29 @@ public class JobService : IJobService
             .SortByDescending(a => a.AppliedAt)
             .ToListAsync();
     }
+
+    public async Task<JobApplication?> ApplyForJobAsync(string jobId, string candidateId, string candidateEmail, string? resumeId = null)
+    {
+        // Check if candidate already applied for this job
+        var existingApp = await _context.JobApplications
+            .Find(a => a.JobId == jobId && a.CandidateId == candidateId)
+            .FirstOrDefaultAsync();
+
+        if (existingApp != null)
+        {
+            return null; // Already applied
+        }
+
+        var application = new JobApplication
+        {
+            JobId = jobId,
+            CandidateId = candidateId,
+            CandidateEmail = candidateEmail,
+            ResumeId = resumeId,
+            AppliedAt = DateTime.UtcNow
+        };
+
+        await _context.JobApplications.InsertOneAsync(application);
+        return application;
+    }
 }

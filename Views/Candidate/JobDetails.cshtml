@@ -1,0 +1,70 @@
+@using TalentAI.Models
+@model Job
+@{
+    ViewData["Title"] = Model.Title;
+    bool hasApplied = ViewBag.HasApplied == true;
+}
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+    <div>
+        <a href="/candidate/feed" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            &larr; Back to Job Feed
+        </a>
+        <h2 style="margin: 0; margin-bottom: 0.5rem; font-size: 2rem;">@Model.Title</h2>
+        <div style="color: var(--text-muted); display: flex; gap: 1rem;">
+            <span>Deadline: @Model.Deadline.ToString("MMM dd, yyyy")</span>
+            <span>&bull;</span>
+            <span>Posted: @Model.CreatedAt.ToString("MMM dd, yyyy")</span>
+        </div>
+    </div>
+
+    <div style="align-self: flex-end;">
+        @if (hasApplied)
+        {
+            <div style="background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.75rem 1.5rem; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Already Applied
+            </div>
+        }
+        else if (Model.Deadline < DateTime.UtcNow)
+        {
+            <div style="background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.75rem 1.5rem; border-radius: var(--radius); display: inline-flex; align-items: center; font-weight: 500;">
+                Closed
+            </div>
+        }
+        else
+        {
+            <form method="post" action="/candidate/apply/@Model.Id">
+                <button type="submit" class="btn-primary" style="padding: 0.75rem 2rem; font-size: 1rem;">
+                    Submit Application
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="response-message success" style="margin-bottom: 2rem;">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="response-message error" style="margin-bottom: 2rem;">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    
+    <!-- Job Details Panel -->
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; align-self: start;">
+        <h4 style="margin-top: 0; color: var(--secondary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">About The Role</h4>
+        <p style="white-space: pre-wrap; font-size: 1rem; line-height: 1.7; color: var(--text-muted); margin-bottom: 2.5rem;">@Model.Description</p>
+        
+        <h4 style="margin-top: 0; color: var(--secondary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">Requirements</h4>
+        <p style="white-space: pre-wrap; font-size: 1rem; line-height: 1.7; color: var(--text-muted); margin-bottom: 0;">@Model.Requirements</p>
+    </div>
+
+</div>
