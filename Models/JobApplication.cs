@@ -17,8 +17,9 @@ public class JobApplication
     
     public string CandidateEmail { get; set; } = null!;
     
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string ResumeId { get; set; } = null!;
+    public string? ResumeFilePath { get; set; }
 
     public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
+
+    public string Status { get; set; } = "Under Review";
 }

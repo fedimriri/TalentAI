@@ -1,0 +1,50 @@
+@using TalentAI.DTOs
+@model ApplyJobDto
+@{
+    ViewData["Title"] = "Apply for " + ViewBag.JobTitle;
+    var jobTitle = ViewBag.JobTitle as string ?? "this position";
+}
+
+<div class="page-header">
+    <a href="/candidate/job/@Model.JobId" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        &larr; Back to Job Details
+    </a>
+    <h2 style="margin-top: 0;">Submit Application</h2>
+    <p>Upload your resume to instantly apply for the <strong>@jobTitle</strong> role.</p>
+</div>
+
+<div class="auth-card" style="margin: 0; max-width: 600px;">
+
+    <form method="post" enctype="multipart/form-data" asp-controller="Candidate" asp-action="Apply" asp-route-id="@Model.JobId" class="auth-form active">
+        
+        <input type="hidden" asp-for="JobId" />
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label asp-for="ResumeFile">Resume Document (PDF, DOCX)</label>
+            <div style="position: relative; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; width: 100%; border: 2px dashed rgba(255,255,255,0.1); border-radius: var(--radius); padding: 2rem; background: rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--secondary)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';">
+                
+                <input asp-for="ResumeFile" type="file" accept=".pdf, .docx" required style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;" 
+                       onchange="document.getElementById('filename-display').innerText = this.files.length > 0 ? this.files[0].name : 'Browse to upload (Max 5MB)';" />
+                
+                <div style="text-align: center; pointer-events: none;">
+                    <svg style="margin-bottom: 0.5rem; color: var(--text-muted);" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <div id="filename-display" style="font-size: 0.95rem; color: var(--text); font-weight: 500;">Browse to upload (.pdf, .docx)</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Maximum file size: 5MB</div>
+                </div>
+
+            </div>
+            <span asp-validation-for="ResumeFile" class="response-message error" style="margin-top: 5px; padding: 0.5rem; display: block; border: none; background: transparent; font-size: 0.8rem;"></span>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="response-message error" style="margin-top: 1.5rem;">
+                Please correct the errors above and ensure you attached a valid resume file.
+            </div>
+        }
+
+        <button type="submit" class="btn-primary" style="margin-top: 1rem;">
+            <span>Submit Application</span>
+        </button>
+    </form>
+</div>

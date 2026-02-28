@@ -82,7 +82,22 @@ public class HRController : Controller
         await _jobService.CreateJobAsync(dto, hrId, hrEmail);
         TempData["SuccessMessage"] = "Job created successfully!";
         
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet("application/{id}")]
+    public async Task<IActionResult> ApplicationDetails(string id)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        if (role != "HR" && role != "Admin") return Redirect("/");
+
+        var application = await _jobService.GetApplicationByIdAsync(id);
+        if (application == null) return NotFound();
+
+        var job = await _jobService.GetJobByIdAsync(application.JobId);
+        ViewBag.JobTitle = job?.Title ?? "Unknown Job";
+
+        return View(application);
     }
 
     [HttpGet("update-profile")]

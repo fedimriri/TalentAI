@@ -34,11 +34,9 @@
         }
         else
         {
-            <form method="post" action="/candidate/apply/@Model.Id">
-                <button type="submit" class="btn-primary" style="padding: 0.75rem 2rem; font-size: 1rem;">
-                    Submit Application
-                </button>
-            </form>
+            <a href="/candidate/job/apply/@Model.Id" class="btn-primary" style="padding: 0.75rem 2rem; font-size: 1rem; text-decoration: none; display: inline-block;">
+                Submit Application
+            </a>
         }
     </div>
 </div>

@@ -50,7 +50,7 @@ public class JobService : IJobService
             .ToListAsync();
     }
 
-    public async Task<JobApplication?> ApplyForJobAsync(string jobId, string candidateId, string candidateEmail, string? resumeId = null)
+    public async Task<JobApplication?> ApplyForJobAsync(string jobId, string candidateId, string candidateEmail, string resumePath)
     {
         // Check if candidate already applied for this job
         var existingApp = await _context.JobApplications
@@ -67,11 +67,19 @@ public class JobService : IJobService
             JobId = jobId,
             CandidateId = candidateId,
             CandidateEmail = candidateEmail,
-            ResumeId = resumeId,
-            AppliedAt = DateTime.UtcNow
+            ResumeFilePath = resumePath,
+            AppliedAt = DateTime.UtcNow,
+            Status = "Under Review"
         };
 
         await _context.JobApplications.InsertOneAsync(application);
         return application;
+    }
+
+    public async Task<JobApplication?> GetApplicationByIdAsync(string applicationId)
+    {
+        return await _context.JobApplications
+            .Find(a => a.Id == applicationId)
+            .FirstOrDefaultAsync();
     }
 }

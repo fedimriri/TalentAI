@@ -33,19 +33,28 @@
         }
         else
         {
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                @foreach (var app in applications)
-                {
-                    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 500; font-size: 1.1rem; margin-bottom: 0.2rem;">@app.CandidateEmail</div>
-                            <div style="font-size: 0.85rem; color: var(--text-muted);">Applied: @app.AppliedAt.ToString("MMM dd, yyyy HH:mm")</div>
-                        </div>
-                        <a href="/api/resumes/@app.ResumeId" target="_blank" class="btn-primary" style="background: rgba(129, 140, 248, 0.1); border: 1px solid rgba(129, 140, 248, 0.3); color: var(--secondary);">
-                            View Resume
-                        </a>
-                    </div>
-                }
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border);">
+                            <th style="padding: 0.75rem 1.5rem;">Candidate</th>
+                            <th style="padding: 0.75rem 1.5rem;">Applied On</th>
+                            <th style="padding: 0.75rem 1.5rem; text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var applicant in applications)
+                        {
+                            <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)';" onmouseout="this.style.background='transparent';">
+                                <td style="padding: 1rem 1.5rem; font-weight: 500;">@applicant.CandidateEmail</td>
+                                <td style="padding: 1rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">@applicant.AppliedAt.ToString("MMM dd, yyyy")</td>
+                                <td style="padding: 1rem 1.5rem; text-align: right;">
+                                    <a href="/hr/application/@applicant.Id" style="color: var(--secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Review Phase &rarr;</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         }
     </div>
