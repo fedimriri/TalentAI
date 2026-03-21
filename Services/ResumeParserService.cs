@@ -22,10 +22,14 @@ public class ResumeParserService : IResumeParserService
         "computer science", "information technology"
     };
 
-    // Regex pattern for experience extraction (user-specified)
-    private static readonly Regex ExperienceRegex = new(
-        @"(\d+)\s*(\+)?\s*(years|year|ans)",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    // Multiple regex patterns for robust experience extraction
+    private static readonly Regex[] ExperiencePatterns =
+    {
+        new(@"(\d+)\s*\+?\s*(years|year)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+        new(@"(\d+)\s*\+?\s*(ans)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+        new(@"experience\s*:?\s*(\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+        new(@"(\d+)\s+yrs", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+    };
 
     public ResumeParserService(MongoDbContext context, ILogger<ResumeParserService> logger)
     {
@@ -74,18 +78,24 @@ public class ResumeParserService : IResumeParserService
                 // Store original raw text
                 parsedResume.RawText = rawText;
 
-                // STEP 4: Normalize text for parsing (lowercase + collapse whitespace)
+                // Normalize text for parsing (lowercase + collapse whitespace)
                 var normalizedText = rawText.ToLower();
                 normalizedText = Regex.Replace(normalizedText, @"\s+", " ");
 
-                // 2. Extract skills from normalized text
+                _logger.LogInformation("[RESUME PARSE] RawText length: {Len}, first 200 chars: {Preview}",
+                    rawText.Length, rawText.Substring(0, Math.Min(200, rawText.Length)));
+
+                // Extract skills from normalized text
                 parsedResume.Skills = ExtractSkills(normalizedText);
+                _logger.LogInformation("[RESUME PARSE] Skills found: {Skills}", string.Join(", ", parsedResume.Skills));
 
-                // 3. Extract experience years from normalized text
+                // Extract experience years from normalized text
                 parsedResume.ExperienceYears = ExtractExperienceYears(normalizedText);
+                _logger.LogInformation("[RESUME PARSE] ExperienceYears: {Years}", parsedResume.ExperienceYears);
 
-                // 4. Extract education from normalized text
+                // Extract education from normalized text
                 parsedResume.Education = ExtractEducation(normalizedText);
+                _logger.LogInformation("[RESUME PARSE] Education: {Edu}", parsedResume.Education);
             }
         }
         catch (Exception ex)
@@ -150,18 +160,25 @@ public class ResumeParserService : IResumeParserService
     }
 
     /// <summary>
-    /// Extract years of experience using regex.
-    /// Pattern: (\d+)\s*(\+)?\s*(years|year|ans)
-    /// Returns the maximum number found.
+    /// Extract years of experience using multiple regex patterns.
+    /// Loops through all patterns and returns the MAX value found.
     /// </summary>
     private static int ExtractExperienceYears(string normalizedText)
     {
-        var matches = ExperienceRegex.Matches(normalizedText);
-        if (matches.Count == 0) return 0;
+        int maxYears = 0;
 
-        return matches
-            .Select(m => int.TryParse(m.Groups[1].Value, out var y) ? y : 0)
-            .Max();
+        foreach (var pattern in ExperiencePatterns)
+        {
+            foreach (Match match in pattern.Matches(normalizedText))
+            {
+                if (int.TryParse(match.Groups[1].Value, out var years) && years > maxYears)
+                {
+                    maxYears = years;
+                }
+            }
+        }
+
+        return maxYears;
     }
 
     /// <summary>

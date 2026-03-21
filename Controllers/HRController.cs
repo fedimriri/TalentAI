@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using TalentAI.Data;
 using TalentAI.DTOs;
+using TalentAI.Models;
 using TalentAI.Services;
 
 namespace TalentAI.Controllers;
@@ -10,14 +13,16 @@ public class HRController : Controller
     private readonly IJobService _jobService;
     private readonly IUserService _userService;
     private readonly IJobParserService _jobParser;
+    private readonly MongoDbContext _context;
     private readonly ILogger<HRController> _logger;
 
     public HRController(IJobService jobService, IUserService userService,
-        IJobParserService jobParser, ILogger<HRController> logger)
+        IJobParserService jobParser, MongoDbContext context, ILogger<HRController> logger)
     {
         _jobService = jobService;
         _userService = userService;
         _jobParser = jobParser;
+        _context = context;
         _logger = logger;
     }
 
@@ -56,8 +61,25 @@ public class HRController : Controller
         if (job == null) return NotFound();
 
         var applicants = await _jobService.GetApplicationsForJobAsync(id);
-        
-        ViewBag.Applicants = applicants;
+
+        // Fetch matching results for all applicants
+        var matchScores = new Dictionary<string, MatchingResult>();
+        foreach (var app in applicants)
+        {
+            var match = await _context.MatchingResults
+                .Find(m => m.JobApplicationId == app.Id)
+                .FirstOrDefaultAsync();
+            if (match != null)
+                matchScores[app.Id] = match;
+        }
+
+        // Sort applicants by TotalScore descending
+        var sortedApplicants = applicants
+            .OrderByDescending(a => matchScores.ContainsKey(a.Id) ? matchScores[a.Id].TotalScore : 0)
+            .ToList();
+
+        ViewBag.Applicants = sortedApplicants;
+        ViewBag.MatchScores = matchScores;
         return View(job);
     }
 

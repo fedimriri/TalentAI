@@ -10,10 +10,14 @@ public class JobParserService : IJobParserService
     private readonly MongoDbContext _context;
     private readonly ILogger<JobParserService> _logger;
 
-    // Reuse the SAME regex pattern as ResumeParserService
-    private static readonly Regex ExperienceRegex = new(
-        @"(\d+)\s*(\+)?\s*(years|year|ans)",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    // Same multi-pattern approach as ResumeParserService
+    private static readonly Regex[] ExperiencePatterns =
+    {
+        new(@"(\d+)\s*\+?\s*(years|year)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+        new(@"(\d+)\s*\+?\s*(ans)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+        new(@"experience\s*:?\s*(\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+        new(@"(\d+)\s+yrs", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+    };
 
     public JobParserService(MongoDbContext context, ILogger<JobParserService> logger)
     {
@@ -52,9 +56,11 @@ public class JobParserService : IJobParserService
 
             // Extract required skills using shared keyword list
             parsedJob.RequiredSkills = ExtractSkills(normalizedText);
+            _logger.LogInformation("[JOB PARSE] RequiredSkills: {Skills}", string.Join(", ", parsedJob.RequiredSkills));
 
             // Extract required experience years
             parsedJob.RequiredExperienceYears = ExtractExperienceYears(normalizedText);
+            _logger.LogInformation("[JOB PARSE] RequiredExperienceYears: {Years}", parsedJob.RequiredExperienceYears);
         }
         catch (Exception ex)
         {
@@ -91,14 +97,20 @@ public class JobParserService : IJobParserService
     }
 
     /// <summary>
-    /// Extract required experience years using regex.
-    /// Returns the FIRST valid match (typical for job descriptions).
+    /// Extract required experience years using multiple regex patterns.
+    /// Returns the FIRST valid match found across all patterns.
     /// </summary>
     private static int ExtractExperienceYears(string normalizedText)
     {
-        var match = ExperienceRegex.Match(normalizedText);
-        if (!match.Success) return 0;
+        foreach (var pattern in ExperiencePatterns)
+        {
+            var match = pattern.Match(normalizedText);
+            if (match.Success && int.TryParse(match.Groups[1].Value, out var years))
+            {
+                return years;
+            }
+        }
 
-        return int.TryParse(match.Groups[1].Value, out var years) ? years : 0;
+        return 0;
     }
 }

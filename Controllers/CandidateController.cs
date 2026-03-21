@@ -10,14 +10,17 @@ public class CandidateController : Controller
     private readonly IUserService _userService;
     private readonly IJobService _jobService;
     private readonly IResumeParserService _resumeParser;
+    private readonly IMatchingService _matchingService;
     private readonly ILogger<CandidateController> _logger;
 
     public CandidateController(IUserService userService, IJobService jobService,
-        IResumeParserService resumeParser, ILogger<CandidateController> logger)
+        IResumeParserService resumeParser, IMatchingService matchingService,
+        ILogger<CandidateController> logger)
     {
         _userService = userService;
         _jobService = jobService;
         _resumeParser = resumeParser;
+        _matchingService = matchingService;
         _logger = logger;
     }
 
@@ -160,6 +163,16 @@ public class CandidateController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Resume parsing failed for application {ApplicationId}", result.Id);
+        }
+
+        // Calculate candidate-job match score (non-blocking)
+        try
+        {
+            await _matchingService.CalculateMatchAsync(id, result.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Matching calculation failed for application {ApplicationId}", result.Id);
         }
 
         TempData["SuccessMessage"] = "Application submitted successfully.";

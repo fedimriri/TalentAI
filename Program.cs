@@ -14,6 +14,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
 builder.Services.AddScoped<IJobParserService, JobParserService>();
+builder.Services.AddScoped<IMatchingService, MatchingService>();
 
 builder.Services.AddControllersWithViews();
 
