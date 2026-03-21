@@ -9,11 +9,16 @@ public class CandidateController : Controller
 {
     private readonly IUserService _userService;
     private readonly IJobService _jobService;
+    private readonly IResumeParserService _resumeParser;
+    private readonly ILogger<CandidateController> _logger;
 
-    public CandidateController(IUserService userService, IJobService jobService)
+    public CandidateController(IUserService userService, IJobService jobService,
+        IResumeParserService resumeParser, ILogger<CandidateController> logger)
     {
         _userService = userService;
         _jobService = jobService;
+        _resumeParser = resumeParser;
+        _logger = logger;
     }
 
     private bool IsCandidate()
@@ -136,6 +141,25 @@ public class CandidateController : Controller
             // Already applied technically
             TempData["ErrorMessage"] = "You have already applied for this position.";
             return Redirect($"/candidate/job/{id}");
+        }
+
+        // Parse the uploaded resume (non-blocking — errors are caught)
+        try
+        {
+            var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath.TrimStart('/'));
+
+            if (!System.IO.File.Exists(physicalPath))
+            {
+                _logger.LogWarning("Resume file not found at {Path}, skipping parsing.", physicalPath);
+            }
+            else
+            {
+                await _resumeParser.ParseAsync(physicalPath, candidateId, result.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Resume parsing failed for application {ApplicationId}", result.Id);
         }
 
         TempData["SuccessMessage"] = "Application submitted successfully.";
