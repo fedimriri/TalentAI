@@ -9,11 +9,16 @@ public class HRController : Controller
 {
     private readonly IJobService _jobService;
     private readonly IUserService _userService;
+    private readonly IJobParserService _jobParser;
+    private readonly ILogger<HRController> _logger;
 
-    public HRController(IJobService jobService, IUserService userService)
+    public HRController(IJobService jobService, IUserService userService,
+        IJobParserService jobParser, ILogger<HRController> logger)
     {
         _jobService = jobService;
         _userService = userService;
+        _jobParser = jobParser;
+        _logger = logger;
     }
 
     private bool IsHR()
@@ -79,7 +84,18 @@ public class HRController : Controller
         var hrId = HttpContext.Session.GetString("UserId")!;
         var hrEmail = HttpContext.Session.GetString("Email")!;
 
-        await _jobService.CreateJobAsync(dto, hrId, hrEmail);
+        var job = await _jobService.CreateJobAsync(dto, hrId, hrEmail);
+
+        // Parse the job description (non-blocking — errors are caught)
+        try
+        {
+            await _jobParser.ParseAsync(job);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Job description parsing failed for job {JobId}", job.Id);
+        }
+
         TempData["SuccessMessage"] = "Job created successfully!";
         
         return RedirectToAction("Index");

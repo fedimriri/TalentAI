@@ -13,34 +13,6 @@ public class ResumeParserService : IResumeParserService
     private readonly MongoDbContext _context;
     private readonly ILogger<ResumeParserService> _logger;
 
-    // Predefined skill keywords for matching (stored lowercase for normalized comparison)
-    private static readonly string[] SkillKeywords =
-    {
-        "c#", "java", "python", "javascript", "typescript",
-        "angular", "react", "vue", "docker", "kubernetes",
-        "sql", "mongodb", "postgresql", "mysql",
-        ".net", "asp.net", "azure", "aws", "gcp",
-        "git", "rest", "graphql", "node.js",
-        "html", "css", "sass", "tailwind",
-        "linux", "ci/cd", "jenkins", "terraform",
-        "spring", "django", "flask", "express",
-        "agile", "scrum", "jira"
-    };
-
-    // Display names for matched skills (original casing)
-    private static readonly string[] SkillDisplayNames =
-    {
-        "C#", "Java", "Python", "JavaScript", "TypeScript",
-        "Angular", "React", "Vue", "Docker", "Kubernetes",
-        "SQL", "MongoDB", "PostgreSQL", "MySQL",
-        ".NET", "ASP.NET", "Azure", "AWS", "GCP",
-        "Git", "REST", "GraphQL", "Node.js",
-        "HTML", "CSS", "Sass", "Tailwind",
-        "Linux", "CI/CD", "Jenkins", "Terraform",
-        "Spring", "Django", "Flask", "Express",
-        "Agile", "Scrum", "Jira"
-    };
-
     // Education keywords to detect (lowercase for normalized comparison)
     private static readonly string[] EducationKeywords =
     {
@@ -162,11 +134,11 @@ public class ResumeParserService : IResumeParserService
     {
         var found = new List<string>();
 
-        for (int i = 0; i < SkillKeywords.Length; i++)
+        for (int i = 0; i < ParsingKeywords.SkillKeywords.Length; i++)
         {
-            if (normalizedText.Contains(SkillKeywords[i]))
+            if (normalizedText.Contains(ParsingKeywords.SkillKeywords[i]))
             {
-                var displayName = SkillDisplayNames[i];
+                var displayName = ParsingKeywords.SkillDisplayNames[i];
                 if (!found.Contains(displayName))
                 {
                     found.Add(displayName);

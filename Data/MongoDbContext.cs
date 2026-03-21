@@ -23,4 +23,5 @@ public class MongoDbContext
     public IMongoCollection<Job> Jobs => _database.GetCollection<Job>("Jobs");
     public IMongoCollection<JobApplication> JobApplications => _database.GetCollection<JobApplication>("JobApplications");
     public IMongoCollection<ParsedResume> ParsedResumes => _database.GetCollection<ParsedResume>("ParsedResumes");
+    public IMongoCollection<ParsedJob> ParsedJobs => _database.GetCollection<ParsedJob>("ParsedJobs");
 }
