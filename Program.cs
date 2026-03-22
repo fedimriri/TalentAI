@@ -16,8 +16,12 @@ builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
 builder.Services.AddScoped<IJobParserService, JobParserService>();
 builder.Services.AddHttpClient<IMatchingService, MatchingService>();
 builder.Services.AddHttpClient<IAtsScoringService, AtsScoringService>();
-// Bind AISettings from appsettings.json
+
+// Bind Settings from appsettings.json
 builder.Services.Configure<AISettings>(builder.Configuration.GetSection("AISettings"));
+builder.Services.Configure<MailtrapSettings>(builder.Configuration.GetSection("MailtrapSettings"));
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 builder.Services.AddControllersWithViews();

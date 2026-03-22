@@ -8,10 +8,12 @@ namespace TalentAI.Controllers;
 public class AdminController : Controller
 {
     private readonly IUserService _userService;
+    private readonly IEmailService _emailService;
 
-    public AdminController(IUserService userService)
+    public AdminController(IUserService userService, IEmailService emailService)
     {
         _userService = userService;
+        _emailService = emailService;
     }
 
     // A helper method to check if the current user is an Admin
@@ -70,7 +72,10 @@ public class AdminController : Controller
             return View(dto);
         }
 
-        TempData["SuccessMessage"] = $"HR account for {dto.Email} created successfully!";
+        // Send email notification asynchronously without awaiting on the main thread
+        _ = _emailService.SendHRCredentialsAsync(dto.Email, dto.Password);
+
+        TempData["SuccessMessage"] = $"HR account for {dto.Email} created successfully! An email with credentials has been sent.";
         return RedirectToAction(nameof(AddManager));
     }
 
