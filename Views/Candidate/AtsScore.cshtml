@@ -1,0 +1,155 @@
+@using TalentAI.DTOs
+@{
+    ViewData["Title"] = "ATS Score Analyzer";
+    var result = ViewBag.Result as CandidateATSScore;
+    var error = ViewBag.Error as string;
+    var fileName = ViewBag.FileName as string;
+}
+
+<div style="max-width: 800px; margin: 0 auto;">
+
+    <a href="/candidate" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        &larr; Back to Dashboard
+    </a>
+
+    <h2 style="margin: 0 0 0.5rem 0; font-size: 2rem;">ATS Score Analyzer</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Upload your resume to get an instant ATS compatibility score with AI-powered feedback.</p>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="response-message error" style="margin-bottom: 1.5rem;">@error</div>
+    }
+
+    <!-- Upload Form -->
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem;">
+        <form method="post" action="/candidate/ats-score" enctype="multipart/form-data" id="atsForm">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Upload Resume</label>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0; margin-bottom: 1rem;">PDF or DOCX, max 5MB</p>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <input type="file" name="ResumeFile" accept=".pdf,.docx" required
+                       style="flex: 1; padding: 0.6rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text);" />
+                <button type="submit" class="btn-primary" style="padding: 0.6rem 1.5rem; white-space: nowrap;" id="submitBtn">
+                    Analyze Resume
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Loading indicator (shown via JS) -->
+    <div id="loader" style="display: none; text-align: center; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 2rem;">
+        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⏳</div>
+        <p style="color: var(--text-muted); margin: 0;">Analyzing your resume... This may take a few seconds.</p>
+    </div>
+
+    @if (result != null)
+    {
+        <!-- Score Summary -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem;">ATS Score Results</h3>
+                    @if (!string.IsNullOrEmpty(fileName))
+                    {
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.25rem 0 0;">@fileName</p>
+                    }
+                </div>
+                <div style="text-align: center;">
+                    @{
+                        var totalColor = result.TotalScore >= 75 ? "#22c55e" : result.TotalScore >= 50 ? "#f59e0b" : "#ef4444";
+                        var totalBg = result.TotalScore >= 75 ? "rgba(34,197,94,0.15)" : result.TotalScore >= 50 ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)";
+                    }
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: @totalBg; border: 3px solid @totalColor;">
+                        <span style="font-size: 1.5rem; font-weight: 700; color: @totalColor;">@result.TotalScore</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Total Score</div>
+                </div>
+            </div>
+
+            <!-- Score Breakdown -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                @{
+                    void RenderScoreBar(string label, double score, string weight)
+                    {
+                        var barColor = score >= 75 ? "#22c55e" : score >= 50 ? "#f59e0b" : "#ef4444";
+                        <div style="background: rgba(0,0,0,0.2); border-radius: var(--radius); padding: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span style="font-size: 0.85rem; font-weight: 500;">@label</span>
+                                <span style="font-size: 0.85rem; font-weight: 600; color: @barColor;">@score%</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); border-radius: 999px; height: 8px; overflow: hidden;">
+                                <div style="background: @barColor; height: 100%; width: @(score)%; border-radius: 999px; transition: width 0.5s ease;"></div>
+                            </div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.35rem;">Weight: @weight</div>
+                        </div>
+                    }
+
+                    RenderScoreBar("Skills", result.SkillScore, "50%");
+                    RenderScoreBar("Experience", result.ExperienceScore, "30%");
+                    RenderScoreBar("Education", result.EducationScore, "20%");
+                }
+            </div>
+
+            <!-- Parsed Details -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <h4 style="margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.05em;">Detected Skills (@result.ResumeSkills.Count)</h4>
+                    @if (result.ResumeSkills.Count > 0)
+                    {
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                            @foreach (var skill in result.ResumeSkills)
+                            {
+                                <span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.8rem;">@skill</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">No skills detected</p>
+                    }
+                </div>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.05em;">Parsed Info</h4>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.25rem;">
+                        <strong style="color: var(--text);">Experience:</strong> @result.ExperienceYears years
+                    </p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                        <strong style="color: var(--text);">Education:</strong> @(string.IsNullOrEmpty(result.Education) ? "Not detected" : result.Education)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Analysis -->
+        @if (result.AiEnhanced && !string.IsNullOrEmpty(result.AiAnalysis))
+        {
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <span style="font-size: 1.2rem;">🤖</span>
+                    <h3 style="margin: 0; font-size: 1.1rem;">AI-Powered Analysis</h3>
+                    <span style="background: rgba(168,85,247,0.15); color: #a855f7; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 500;">Groq AI</span>
+                </div>
+                <div style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.7; color: var(--text-muted);">@result.AiAnalysis</div>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(result.AiAnalysis))
+        {
+            <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: var(--radius); padding: 1rem;">
+                <p style="color: #f59e0b; font-size: 0.85rem; margin: 0;">⚠️ @result.AiAnalysis</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(result.ErrorMessage))
+        {
+            <div class="response-message error" style="margin-top: 1rem;">@result.ErrorMessage</div>
+        }
+    }
+
+</div>
+
+<script>
+    document.getElementById('atsForm').addEventListener('submit', function () {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').textContent = 'Analyzing...';
+        document.getElementById('loader').style.display = 'block';
+    });
+</script>

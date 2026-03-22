@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TalentAI.DTOs;
+using TalentAI.Models;
 using TalentAI.Services;
 
 namespace TalentAI.Controllers;
@@ -11,16 +12,18 @@ public class CandidateController : Controller
     private readonly IJobService _jobService;
     private readonly IResumeParserService _resumeParser;
     private readonly IMatchingService _matchingService;
+    private readonly IAtsScoringService _atsScoringService;
     private readonly ILogger<CandidateController> _logger;
 
     public CandidateController(IUserService userService, IJobService jobService,
         IResumeParserService resumeParser, IMatchingService matchingService,
-        ILogger<CandidateController> logger)
+        IAtsScoringService atsScoringService, ILogger<CandidateController> logger)
     {
         _userService = userService;
         _jobService = jobService;
         _resumeParser = resumeParser;
         _matchingService = matchingService;
+        _atsScoringService = atsScoringService;
         _logger = logger;
     }
 
@@ -272,5 +275,67 @@ public class CandidateController : Controller
 
         TempData["SuccessMessage"] = "Application deleted successfully.";
         return Redirect("/candidate");
+    }
+
+    // --- ATS Score Tool ---
+
+    [HttpGet("ats-score")]
+    public IActionResult AtsScore()
+    {
+        if (!IsCandidate()) return Redirect("/");
+        return View();
+    }
+
+    [HttpPost("ats-score")]
+    public async Task<IActionResult> AtsScorePost(IFormFile ResumeFile)
+    {
+        if (!IsCandidate()) return Redirect("/");
+
+        if (ResumeFile == null || ResumeFile.Length == 0)
+        {
+            ViewBag.Error = "Please upload a valid resume file.";
+            return View("AtsScore");
+        }
+
+        var extension = Path.GetExtension(ResumeFile.FileName).ToLowerInvariant();
+        if (extension != ".pdf" && extension != ".docx")
+        {
+            ViewBag.Error = "Only PDF and DOCX files are allowed.";
+            return View("AtsScore");
+        }
+
+        if (ResumeFile.Length > 5 * 1024 * 1024)
+        {
+            ViewBag.Error = "File size cannot exceed 5MB.";
+            return View("AtsScore");
+        }
+
+        // Save to temp location
+        var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + extension);
+        try
+        {
+            using (var stream = new FileStream(tempPath, FileMode.Create))
+            {
+                await ResumeFile.CopyToAsync(stream);
+            }
+
+            var candidateId = HttpContext.Session.GetString("UserId") ?? "anonymous";
+            var result = await _atsScoringService.ComputeScoreAsync(tempPath, candidateId);
+
+            ViewBag.Result = result;
+            ViewBag.FileName = ResumeFile.FileName;
+            return View("AtsScore");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ATS scoring failed");
+            ViewBag.Error = "An error occurred while processing your resume. Please try again.";
+            return View("AtsScore");
+        }
+        finally
+        {
+            if (System.IO.File.Exists(tempPath))
+                System.IO.File.Delete(tempPath);
+        }
     }
 }
