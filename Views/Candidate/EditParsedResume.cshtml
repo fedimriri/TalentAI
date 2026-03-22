@@ -1,0 +1,75 @@
+@using TalentAI.Models
+@model ParsedResume
+@{
+    ViewData["Title"] = "Edit Parsed Resume";
+}
+
+<div style="max-width: 700px; margin: 0 auto;">
+
+    <a href="/candidate" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        &larr; Back to Dashboard
+    </a>
+
+    <h2 style="margin: 0 0 0.5rem; font-size: 1.75rem;">Edit Parsed Resume</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem;">
+        Review and correct the data extracted from your resume. Changes will recalculate your ATS scores.
+    </p>
+
+    <form method="post" action="/candidate/edit-resume/@Model.JobApplicationId">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
+
+            <!-- Skills -->
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Skills</label>
+                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0 0 0.5rem;">Comma-separated list of skills</p>
+                <input type="text" name="Skills" value="@string.Join(", ", Model.Skills)"
+                       style="width: 100%; padding: 0.65rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.95rem;"
+                       placeholder="C#, JavaScript, SQL, Docker..." />
+            </div>
+
+            <!-- Current Skills Preview -->
+            @if (Model.Skills.Count > 0)
+            {
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.05em;">Current Skills Preview</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                        @foreach (var skill in Model.Skills)
+                        {
+                            <span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.8rem;">@skill</span>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Experience Years -->
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Experience (years)</label>
+                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0 0 0.5rem;">Decimal value, e.g. 2.92 for 2 years 11 months</p>
+                <input type="number" name="ExperienceYears" value="@Model.ExperienceYears" step="0.01" min="0" max="50"
+                       style="width: 200px; padding: 0.65rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.95rem;" />
+            </div>
+
+            <!-- Education -->
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Education</label>
+                <input type="text" name="Education" value="@Model.Education"
+                       style="width: 100%; padding: 0.65rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.95rem;"
+                       placeholder="Bachelor in Computer Science" />
+            </div>
+
+            <!-- Raw Text (readonly) -->
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Raw Text <span style="color: var(--text-muted); font-weight: 400; font-size: 0.8rem;">(read-only)</span></label>
+                <textarea readonly
+                          style="width: 100%; height: 150px; padding: 0.65rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-muted); font-size: 0.85rem; resize: vertical;">@Model.RawText</textarea>
+            </div>
+
+            <!-- Submit -->
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 0.5rem;">
+                <a href="/candidate" style="padding: 0.65rem 1.5rem; color: var(--text-muted); text-decoration: none; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem;">Cancel</a>
+                <button type="submit" class="btn-primary" style="padding: 0.65rem 1.5rem;">Save & Recalculate Score</button>
+            </div>
+        </div>
+    </form>
+
+</div>

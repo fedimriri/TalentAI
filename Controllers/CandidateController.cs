@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using TalentAI.Data;
 using TalentAI.DTOs;
 using TalentAI.Models;
 using TalentAI.Services;
@@ -13,17 +15,20 @@ public class CandidateController : Controller
     private readonly IResumeParserService _resumeParser;
     private readonly IMatchingService _matchingService;
     private readonly IAtsScoringService _atsScoringService;
+    private readonly MongoDbContext _context;
     private readonly ILogger<CandidateController> _logger;
 
     public CandidateController(IUserService userService, IJobService jobService,
         IResumeParserService resumeParser, IMatchingService matchingService,
-        IAtsScoringService atsScoringService, ILogger<CandidateController> logger)
+        IAtsScoringService atsScoringService, MongoDbContext context,
+        ILogger<CandidateController> logger)
     {
         _userService = userService;
         _jobService = jobService;
         _resumeParser = resumeParser;
         _matchingService = matchingService;
         _atsScoringService = atsScoringService;
+        _context = context;
         _logger = logger;
     }
 
@@ -337,5 +342,86 @@ public class CandidateController : Controller
             if (System.IO.File.Exists(tempPath))
                 System.IO.File.Delete(tempPath);
         }
+    }
+
+    // --- Edit Parsed Resume ---
+
+    [HttpGet("edit-resume/{applicationId}")]
+    public async Task<IActionResult> EditParsedResume(string applicationId)
+    {
+        if (!IsCandidate()) return Redirect("/");
+        var candidateId = HttpContext.Session.GetString("UserId")!;
+
+        var parsed = await _context.ParsedResumes
+            .Find(p => p.JobApplicationId == applicationId && p.CandidateId == candidateId)
+            .FirstOrDefaultAsync();
+
+        if (parsed == null)
+        {
+            TempData["ErrorMessage"] = "No parsed resume found for this application.";
+            return Redirect("/candidate");
+        }
+
+        return View("EditParsedResume", parsed);
+    }
+
+    [HttpPost("edit-resume/{applicationId}")]
+    public async Task<IActionResult> EditParsedResumePost(string applicationId,
+        string Skills, double ExperienceYears, string Education)
+    {
+        if (!IsCandidate()) return Redirect("/");
+        var candidateId = HttpContext.Session.GetString("UserId")!;
+
+        var parsed = await _context.ParsedResumes
+            .Find(p => p.JobApplicationId == applicationId && p.CandidateId == candidateId)
+            .FirstOrDefaultAsync();
+
+        if (parsed == null)
+        {
+            TempData["ErrorMessage"] = "No parsed resume found for this application.";
+            return Redirect("/candidate");
+        }
+
+        // Update fields
+        var skillList = (Skills ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+        var update = Builders<ParsedResume>.Update
+            .Set(p => p.Skills, skillList)
+            .Set(p => p.ExperienceYears, Math.Round(ExperienceYears, 2))
+            .Set(p => p.Education, Education ?? string.Empty);
+
+        await _context.ParsedResumes.UpdateOneAsync(
+            p => p.Id == parsed.Id, update);
+
+        _logger.LogInformation(
+            "[EDIT RESUME] App:{AppId} Skills:{Skills} Exp:{Exp} Edu:{Edu}",
+            applicationId, string.Join(", ", skillList), ExperienceYears, Education);
+
+        // Optionally re-run matching
+        try
+        {
+            // Delete old matching result so it can be recalculated
+            await _context.MatchingResults.DeleteOneAsync(
+                m => m.JobApplicationId == applicationId);
+
+            var app = await _context.JobApplications
+                .Find(a => a.Id == applicationId)
+                .FirstOrDefaultAsync();
+
+            if (app != null)
+            {
+                await _matchingService.CalculateMatchAsync(app.JobId, applicationId);
+                _logger.LogInformation("[EDIT RESUME] Re-ran matching for App:{AppId}", applicationId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[EDIT RESUME] Failed to re-run matching for App:{AppId}", applicationId);
+        }
+
+        TempData["SuccessMessage"] = "Parsed resume updated successfully. ATS scores have been recalculated.";
+        return Redirect("/candidate");
     }
 }
