@@ -22,7 +22,11 @@ public class ResumeParserService : IResumeParserService
         "computer science", "information technology"
     };
 
-    // Explicit experience patterns ("5 years", "3 ans", "experience: 4", "2 yrs")
+    // Explicit experience patterns ("5 years", "2 years 11 months", "3 ans", "experience: 4", "2 yrs")
+    private static readonly Regex YearMonthPattern = new(
+        @"(\d+)\s*(?:years?|ans)\s*(?:and\s*)?(\d+)\s*(?:months?|mo|mois)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private static readonly Regex[] ExplicitExperiencePatterns =
     {
         new(@"(\d+)\s*\+?\s*(years|year)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -165,6 +169,17 @@ public class ResumeParserService : IResumeParserService
     /// </summary>
     private double ExtractExperienceYears(string normalizedText)
     {
+        // --- STRATEGY 0: Combined "X years Y months" pattern (highest precision) ---
+        var ymMatch = YearMonthPattern.Match(normalizedText);
+        if (ymMatch.Success)
+        {
+            int.TryParse(ymMatch.Groups[1].Value, out var y);
+            int.TryParse(ymMatch.Groups[2].Value, out var m);
+            var combined = Math.Round(y + m / 12.0, 2);
+            _logger.LogInformation("[EXPERIENCE DEBUG] Found year+month pattern: {Y}y {M}m = {Combined}", y, m, combined);
+            return combined;
+        }
+
         // --- STRATEGY 1: Explicit "X years" patterns ---
         int explicitMax = 0;
         foreach (var pattern in ExplicitExperiencePatterns)

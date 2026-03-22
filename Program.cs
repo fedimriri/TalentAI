@@ -16,6 +16,9 @@ builder.Services.AddScoped<IResumeParserService, ResumeParserService>();
 builder.Services.AddScoped<IJobParserService, JobParserService>();
 builder.Services.AddScoped<IMatchingService, MatchingService>();
 builder.Services.AddHttpClient<IAtsScoringService, AtsScoringService>();
+// Bind AISettings from appsettings.json
+builder.Services.Configure<AISettings>(builder.Configuration.GetSection("AISettings"));
+
 
 builder.Services.AddControllersWithViews();
 

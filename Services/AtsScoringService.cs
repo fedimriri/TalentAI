@@ -2,6 +2,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Packaging;
+using Microsoft.Extensions.Options;
+using TalentAI.Configurations;
 using TalentAI.DTOs;
 using TalentAI.Models;
 using UglyToad.PdfPig;
@@ -12,6 +14,7 @@ public class AtsScoringService : IAtsScoringService
 {
     private readonly ILogger<AtsScoringService> _logger;
     private readonly HttpClient _httpClient;
+    private readonly string _groqApiKey;
 
     // ATS weights
     private const double SkillWeight = 0.5;
@@ -19,11 +22,14 @@ public class AtsScoringService : IAtsScoringService
     private const double EducationWeight = 0.2;
 
     // Groq API
-    private const string GroqApiKey = "REMOVED";
     private const string GroqEndpoint = "https://api.groq.com/openai/v1/chat/completions";
     private const string GroqModel = "llama-3.1-8b-instant";
 
     // Experience regex patterns
+    private static readonly Regex YearMonthPattern = new(
+        @"(\d+)\s*(?:years?|ans)\s*(?:and\s*)?(\d+)\s*(?:months?|mo|mois)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private static readonly Regex[] ExperiencePatterns =
     {
         new(@"(\d+)\s*\+?\s*(years|year)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -54,10 +60,11 @@ public class AtsScoringService : IAtsScoringService
         "computer science", "information technology"
     };
 
-    public AtsScoringService(ILogger<AtsScoringService> logger, HttpClient httpClient)
+    public AtsScoringService(ILogger<AtsScoringService> logger, HttpClient httpClient, IOptions<AISettings> aiSettings)
     {
         _logger = logger;
         _httpClient = httpClient;
+        _groqApiKey = aiSettings.Value.GroqApiKey;
     }
 
     public async Task<CandidateATSScore> ComputeScoreAsync(string filePath, string candidateId)
@@ -182,7 +189,7 @@ Provide:
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };
-        request.Headers.Add("Authorization", $"Bearer {GroqApiKey}");
+        request.Headers.Add("Authorization", $"Bearer {_groqApiKey}");
 
         var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
@@ -229,12 +236,21 @@ Provide:
 
     private double ExtractExperienceYears(string normalizedText)
     {
+        // Strategy 0: Combined "X years Y months"
+        var ymMatch = YearMonthPattern.Match(normalizedText);
+        if (ymMatch.Success)
+        {
+            int.TryParse(ymMatch.Groups[1].Value, out var y);
+            int.TryParse(ymMatch.Groups[2].Value, out var m);
+            return Math.Round(y + m / 12.0, 2);
+        }
+
         // Strategy 1: Explicit patterns
         int explicitMax = 0;
         foreach (var pattern in ExperiencePatterns)
             foreach (Match match in pattern.Matches(normalizedText))
-                if (int.TryParse(match.Groups[1].Value, out var y) && y > explicitMax)
-                    explicitMax = y;
+                if (int.TryParse(match.Groups[1].Value, out var yv) && yv > explicitMax)
+                    explicitMax = yv;
 
         if (explicitMax > 0) return explicitMax;
 

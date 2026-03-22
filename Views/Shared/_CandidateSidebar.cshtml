@@ -26,6 +26,9 @@
         <li>
             <a href="/candidate/feed" class="@(currentPath == "/candidate/feed" || currentPath.StartsWith("/candidate/job") ? "active" : "")">Explore Jobs</a>
         </li>
+        <li>
+            <a href="/candidate/ats-score" class="@(currentPath == "/candidate/ats-score" ? "active" : "")">ATS Score</a>
+        </li>
     </ul>
 
     <a href="/" onclick="fetch('/api/auth/logout', {method:'POST'}); sessionStorage.clear(); localStorage.clear();" class="logout-btn">Sign Out</a>
