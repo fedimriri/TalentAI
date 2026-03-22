@@ -25,19 +25,7 @@ public class AtsScoringService : IAtsScoringService
     private const string GroqEndpoint = "https://api.groq.com/openai/v1/chat/completions";
     private const string GroqModel = "llama-3.1-8b-instant";
 
-    // Experience regex patterns
-    private static readonly Regex YearMonthPattern = new(
-        @"(\d+)\s*(?:years?|ans)\s*(?:and\s*)?(\d+)\s*(?:months?|mo|mois)",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-    private static readonly Regex[] ExperiencePatterns =
-    {
-        new(@"(\d+)\s*\+?\s*(years|year)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        new(@"(\d+)\s*\+?\s*(ans)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        new(@"experience\s*:?\s*(\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        new(@"(\d+)\s+yrs", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-    };
-
+    // Date range pattern for experience extraction
     private static readonly Regex DateRangePattern = new(
         @"(?:(\w+)\s+)?(\d{4})\s*[-–—]\s*(?:(\w+)\s+)?(\d{4}|present|current|now|aujourd'hui)",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -236,27 +224,8 @@ Provide:
 
     private double ExtractExperienceYears(string normalizedText)
     {
-        // Strategy 0: Combined "X years Y months"
-        var ymMatch = YearMonthPattern.Match(normalizedText);
-        if (ymMatch.Success)
-        {
-            int.TryParse(ymMatch.Groups[1].Value, out var y);
-            int.TryParse(ymMatch.Groups[2].Value, out var m);
-            return Math.Round(y + m / 12.0, 2);
-        }
-
-        // Strategy 1: Explicit patterns
-        int explicitMax = 0;
-        foreach (var pattern in ExperiencePatterns)
-            foreach (Match match in pattern.Matches(normalizedText))
-                if (int.TryParse(match.Groups[1].Value, out var yv) && yv > explicitMax)
-                    explicitMax = yv;
-
-        if (explicitMax > 0) return explicitMax;
-
-        // Strategy 2: Date ranges with month precision
         var now = DateTime.UtcNow;
-        double total = 0;
+        int totalMonths = 0;
 
         foreach (Match match in DateRangePattern.Matches(normalizedText))
         {
@@ -275,15 +244,18 @@ Provide:
             else continue;
 
             if (startYear < 1970 || endYear > now.Year + 1) continue;
+            if (startMonth < 1 || startMonth > 12) startMonth = 1;
+            if (endMonth < 1 || endMonth > 12) endMonth = 12;
+
             var start = new DateTime(startYear, startMonth, 1);
             var end = new DateTime(endYear, endMonth, 1);
             if (end < start) continue;
 
             int months = (end.Year - start.Year) * 12 + (end.Month - start.Month);
-            total += Math.Round(months / 12.0, 1);
+            totalMonths += months;
         }
 
-        return Math.Min(Math.Round(total, 1), 20);
+        return Math.Clamp(Math.Round(totalMonths / 12.0, 1), 0, 40);
     }
 
     private static string ExtractEducation(string normalizedText)

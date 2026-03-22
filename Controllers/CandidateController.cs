@@ -426,4 +426,82 @@ public class CandidateController : Controller
         TempData["SuccessMessage"] = "Parsed resume updated successfully. ATS scores have been recalculated.";
         return Redirect("/candidate");
     }
+
+    // --- Candidate Master Profile ---
+
+    [HttpGet("profile")]
+    public async Task<IActionResult> Profile()
+    {
+        if (!IsCandidate()) return Redirect("/");
+        var candidateId = HttpContext.Session.GetString("UserId")!;
+
+        var profile = await _context.CandidateProfiles
+            .Find(p => p.CandidateId == candidateId)
+            .FirstOrDefaultAsync();
+
+        if (profile == null)
+        {
+            // Auto-fill from latest ParsedResume
+            var latestResume = await _context.ParsedResumes
+                .Find(p => p.CandidateId == candidateId)
+                .SortByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            profile = new CandidateProfile
+            {
+                CandidateId = candidateId,
+                Skills = latestResume?.Skills ?? new List<string>(),
+                ExperienceYears = latestResume?.ExperienceYears ?? 0,
+                Education = latestResume?.Education ?? string.Empty,
+                UpdatedAt = DateTime.UtcNow
+            };
+        }
+
+        return View("Profile", profile);
+    }
+
+    [HttpPost("profile")]
+    public async Task<IActionResult> ProfilePost(string Skills, double ExperienceYears, string Education)
+    {
+        if (!IsCandidate()) return Redirect("/");
+        var candidateId = HttpContext.Session.GetString("UserId")!;
+
+        var skillList = (Skills ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+        var existing = await _context.CandidateProfiles
+            .Find(p => p.CandidateId == candidateId)
+            .FirstOrDefaultAsync();
+
+        if (existing != null)
+        {
+            var update = Builders<CandidateProfile>.Update
+                .Set(p => p.Skills, skillList)
+                .Set(p => p.ExperienceYears, Math.Round(ExperienceYears, 2))
+                .Set(p => p.Education, Education ?? string.Empty)
+                .Set(p => p.UpdatedAt, DateTime.UtcNow);
+
+            await _context.CandidateProfiles.UpdateOneAsync(
+                p => p.Id == existing.Id, update);
+        }
+        else
+        {
+            var profile = new CandidateProfile
+            {
+                CandidateId = candidateId,
+                Skills = skillList,
+                ExperienceYears = Math.Round(ExperienceYears, 2),
+                Education = Education ?? string.Empty,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await _context.CandidateProfiles.InsertOneAsync(profile);
+        }
+
+        _logger.LogInformation("[PROFILE] Updated for candidate {Id}: Skills={Skills} Exp={Exp} Edu={Edu}",
+            candidateId, string.Join(", ", skillList), ExperienceYears, Education);
+
+        TempData["SuccessMessage"] = "Profile updated successfully.";
+        return Redirect("/candidate/profile");
+    }
 }

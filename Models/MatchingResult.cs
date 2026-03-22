@@ -45,4 +45,9 @@ public class MatchingResult
         get => null;
         set { if (value.HasValue) SkillScore = value.Value; }
     }
+
+    // Phase 3.6 AI Semantic Matching
+    public double AiScore { get; set; }
+    public string AiAnalysis { get; set; } = string.Empty;
+    public bool AiEnhanced { get; set; }
 }

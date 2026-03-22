@@ -1,5 +1,8 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using TalentAI.Configurations;
 using TalentAI.Data;
 using TalentAI.Models;
 
@@ -9,16 +12,27 @@ public class MatchingService : IMatchingService
 {
     private readonly MongoDbContext _context;
     private readonly ILogger<MatchingService> _logger;
+    private readonly HttpClient _httpClient;
+    private readonly string _groqApiKey;
 
     // Default ATS weights (Skills=50%, Experience=30%, Education=20%)
     private const double DefaultSkillWeight = 0.5;
     private const double DefaultExperienceWeight = 0.3;
     private const double DefaultEducationWeight = 0.2;
 
-    public MatchingService(MongoDbContext context, ILogger<MatchingService> logger)
+    private const string GroqEndpoint = "https://api.groq.com/openai/v1/chat/completions";
+    private const string GroqModel = "llama-3.1-8b-instant";
+
+    public MatchingService(
+        MongoDbContext context, 
+        ILogger<MatchingService> logger, 
+        HttpClient httpClient, 
+        IOptions<AISettings> aiSettings)
     {
         _context = context;
         _logger = logger;
+        _httpClient = httpClient;
+        _groqApiKey = aiSettings.Value.GroqApiKey;
     }
 
     public async Task<MatchingResult> CalculateMatchAsync(string jobId, string applicationId)
@@ -41,6 +55,10 @@ public class MatchingService : IMatchingService
 
         var parsedJob = await _context.ParsedJobs
             .Find(p => p.JobId == jobId)
+            .FirstOrDefaultAsync();
+
+        var job = await _context.Jobs
+            .Find(j => j.Id == jobId)
             .FirstOrDefaultAsync();
 
         // Build result with weights
@@ -72,15 +90,39 @@ public class MatchingService : IMatchingService
             ComputeSkillScore(result, parsedResume, parsedJob);
             ComputeExperienceScore(result, parsedResume, parsedJob);
             ComputeEducationScore(result, parsedResume);
-            ComputeTotalScore(result);
+            ComputeTotalScore(result); // This is the Base / Keyword score
 
-            // Build ScoreBreakdown JSON
+            double baseScore = result.TotalScore;
+
+            // Phase 3.6: AI Semantic Matching via Groq
+            if (!string.IsNullOrEmpty(_groqApiKey) && !string.IsNullOrWhiteSpace(parsedResume.RawText))
+            {
+                var aiScoreResult = await CallGroqApiAsync(parsedResume.RawText, job.Description);
+                if (aiScoreResult != null)
+                {
+                    result.AiScore = aiScoreResult.Value.Score;
+                    result.AiAnalysis = aiScoreResult.Value.Analysis;
+                    result.AiEnhanced = true;
+
+                    // Blend scores: 60% Keyword / 40% AI
+                    result.TotalScore = Math.Round((baseScore * 0.6) + (result.AiScore * 0.4), 1);
+                    
+                    _logger.LogInformation(
+                        "[AI MATCHING] App:{AppId} BaseScore:{Base} AiScore:{Ai} FinalScore:{Final}",
+                        applicationId, baseScore, result.AiScore, result.TotalScore);
+                }
+            }
+
+            // Build ScoreBreakdown JSON including AI results
             result.ScoreBreakdown = JsonSerializer.Serialize(new
             {
+                baseScore = baseScore,
                 skills = result.SkillScore,
                 experience = result.ExperienceScore,
                 education = result.EducationScore,
                 total = result.TotalScore,
+                aiEnhanced = result.AiEnhanced,
+                aiScore = result.AiScore,
                 weights = new
                 {
                     skills = result.SkillWeight,
@@ -132,26 +174,26 @@ public class MatchingService : IMatchingService
     }
 
     /// <summary>
-    /// ExperienceScore: 100 if candidate >= required, else proportional.
-    /// Uses month-level precision (double).
+    /// ExperienceScore: Math.Min(candidate/required, 1.0) * 100
+    /// If requiredYears == 0 → score = 100.
     /// </summary>
-    private static void ComputeExperienceScore(MatchingResult result, ParsedResume resume, ParsedJob job)
+    private void ComputeExperienceScore(MatchingResult result, ParsedResume resume, ParsedJob job)
     {
-        var candidateYears = resume.ExperienceYears;
-        var requiredYears = job.RequiredExperienceYears;
+        double candidateExp = resume.ExperienceYears;
+        double requiredExp = job.RequiredExperienceYears;
 
-        if (requiredYears <= 0)
-        {
-            result.ExperienceScore = 100;
-        }
-        else if (candidateYears >= requiredYears)
+        if (requiredExp <= 0)
         {
             result.ExperienceScore = 100;
         }
         else
         {
-            result.ExperienceScore = Math.Round(candidateYears / requiredYears * 100, 1);
+            result.ExperienceScore = Math.Round(Math.Min(candidateExp / requiredExp, 1.0) * 100, 1);
         }
+
+        _logger.LogInformation(
+            "[EXP SCORE] CandidateExp:{Candidate} RequiredExp:{Required} Score:{Score}",
+            candidateExp, requiredExp, result.ExperienceScore);
     }
 
     /// <summary>
@@ -209,5 +251,82 @@ public class MatchingService : IMatchingService
                 return ParsingKeywords.SkillDisplayNames[i];
         }
         return lowercaseSkill;
+    }
+
+    private async Task<(double Score, string Analysis)?> CallGroqApiAsync(string resumeText, string jobDescription)
+    {
+        try
+        {
+            var prompt = $@"
+Analyze the candidate's resume against the job description.
+Provide a semantic match score from 0 to 100 based on overall fit, not just keywords.
+Also provide a very short 1-2 sentence explanation.
+
+Resume:
+{resumeText}
+
+Job Description:
+{jobDescription}
+
+Respond strictly in this JSON format:
+{{
+    ""score"": 85,
+    ""analysis"": ""Candidate has strong background in requested frontend frameworks.""
+}}";
+
+            var requestBody = new
+            {
+                model = GroqModel,
+                messages = new[]
+                {
+                    new { role = "user", content = prompt }
+                },
+                response_format = new { type = "json_object" },
+                temperature = 0.2
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, GroqEndpoint);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _groqApiKey);
+            request.Content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("[AI MATCHING] Groq API returned {StatusCode}", response.StatusCode);
+                return null;
+            }
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(jsonResponse);
+            
+            var contentString = doc.RootElement
+                .GetProperty("choices")[0]
+                .GetProperty("message")
+                .GetProperty("content")
+                .GetString();
+
+            if (string.IsNullOrEmpty(contentString)) return null;
+
+            using var resultDoc = JsonDocument.Parse(contentString);
+            var root = resultDoc.RootElement;
+
+            double score = 0;
+            if (root.TryGetProperty("score", out var scoreElement))
+            {
+                if (scoreElement.ValueKind == JsonValueKind.Number) score = scoreElement.GetDouble();
+                else if (scoreElement.ValueKind == JsonValueKind.String && double.TryParse(scoreElement.GetString(), out var s)) score = s;
+            }
+
+            string analysis = root.TryGetProperty("analysis", out var analysisElement) 
+                ? analysisElement.GetString() ?? "" 
+                : "";
+
+            return (Math.Clamp(score, 0, 100), analysis);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AI MATCHING] Failed to call Groq API.");
+            return null;
+        }
     }
 }

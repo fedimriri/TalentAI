@@ -52,7 +52,10 @@ public class HRController : Controller
     }
 
     [HttpGet("job/{id}")]
-    public async Task<IActionResult> JobDetails(string id)
+    public async Task<IActionResult> JobDetails(string id, 
+        [FromQuery] double? minScore, 
+        [FromQuery] string? skill, 
+        [FromQuery] double? minExperience)
     {
         if (!IsHR()) return Redirect("/");
         if (await RequiresProfileUpdateAsync()) return RedirectToAction(nameof(UpdateProfile));
@@ -62,15 +65,42 @@ public class HRController : Controller
 
         var applicants = await _jobService.GetApplicationsForJobAsync(id);
 
-        // Fetch matching results for all applicants
+        // Fetch matching results & parsed resumes for all applicants
         var matchScores = new Dictionary<string, MatchingResult>();
-        foreach (var app in applicants)
+        var parsedResumes = new Dictionary<string, ParsedResume>();
+
+        foreach (var app in Enumerable.Reverse(applicants).ToList()) // to avoid modifying collection while iterating if we remove
         {
             var match = await _context.MatchingResults
                 .Find(m => m.JobApplicationId == app.Id)
                 .FirstOrDefaultAsync();
-            if (match != null)
-                matchScores[app.Id] = match;
+                
+            var parsed = await _context.ParsedResumes
+                .Find(p => p.JobApplicationId == app.Id)
+                .FirstOrDefaultAsync();
+
+            // Apply Filters
+            if (minScore.HasValue && (match == null || match.TotalScore < minScore.Value))
+            {
+                applicants.Remove(app);
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(skill) && 
+                (match == null || !match.MatchedSkills.Any(s => s.Contains(skill, StringComparison.OrdinalIgnoreCase))))
+            {
+                applicants.Remove(app);
+                continue;
+            }
+
+            if (minExperience.HasValue && (parsed == null || parsed.ExperienceYears < minExperience.Value))
+            {
+                applicants.Remove(app);
+                continue;
+            }
+
+            if (match != null) matchScores[app.Id] = match;
+            if (parsed != null) parsedResumes[app.Id] = parsed;
         }
 
         // Sort applicants by TotalScore descending
@@ -80,6 +110,12 @@ public class HRController : Controller
 
         ViewBag.Applicants = sortedApplicants;
         ViewBag.MatchScores = matchScores;
+        
+        // Pass back current filters for UI
+        ViewBag.FilterMinScore = minScore;
+        ViewBag.FilterSkill = skill;
+        ViewBag.FilterMinExperience = minExperience;
+        
         return View(job);
     }
 
@@ -135,7 +171,55 @@ public class HRController : Controller
         var job = await _jobService.GetJobByIdAsync(application.JobId);
         ViewBag.JobTitle = job?.Title ?? "Unknown Job";
 
+        var matchResult = await _context.MatchingResults
+            .Find(m => m.JobApplicationId == id)
+            .FirstOrDefaultAsync();
+        ViewBag.MatchResult = matchResult;
+
+        var feedback = await _context.HRFeedbacks
+            .Find(f => f.ApplicationId == id)
+            .FirstOrDefaultAsync();
+        ViewBag.Feedback = feedback;
+
         return View(application);
+    }
+
+    [HttpPost("feedback/{applicationId}")]
+    public async Task<IActionResult> SubmitFeedback(string applicationId, int rating, string comment)
+    {
+        var role = HttpContext.Session.GetString("Role");
+        var userId = HttpContext.Session.GetString("UserId");
+        if (role != "HR" && role != "Admin") return Redirect("/");
+
+        var existing = await _context.HRFeedbacks
+            .Find(f => f.ApplicationId == applicationId)
+            .FirstOrDefaultAsync();
+
+        if (existing != null)
+        {
+            var update = Builders<HRFeedback>.Update
+                .Set(f => f.Rating, Math.Clamp(rating, 1, 5))
+                .Set(f => f.Comment, comment ?? string.Empty)
+                .Set(f => f.CreatedAt, DateTime.UtcNow);
+
+            await _context.HRFeedbacks.UpdateOneAsync(f => f.Id == existing.Id, update);
+            TempData["SuccessMessage"] = "Feedback updated successfully.";
+        }
+        else
+        {
+            var newFeedback = new HRFeedback
+            {
+                ApplicationId = applicationId,
+                HRUserId = userId!,
+                Rating = Math.Clamp(rating, 1, 5),
+                Comment = comment ?? string.Empty,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _context.HRFeedbacks.InsertOneAsync(newFeedback);
+            TempData["SuccessMessage"] = "Feedback saved successfully.";
+        }
+
+        return Redirect($"/hr/application/{applicationId}");
     }
 
     [HttpPost("application/update-status/{id}")]

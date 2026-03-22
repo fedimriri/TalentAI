@@ -22,19 +22,6 @@ public class ResumeParserService : IResumeParserService
         "computer science", "information technology"
     };
 
-    // Explicit experience patterns ("5 years", "2 years 11 months", "3 ans", "experience: 4", "2 yrs")
-    private static readonly Regex YearMonthPattern = new(
-        @"(\d+)\s*(?:years?|ans)\s*(?:and\s*)?(\d+)\s*(?:months?|mo|mois)",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-    private static readonly Regex[] ExplicitExperiencePatterns =
-    {
-        new(@"(\d+)\s*\+?\s*(years|year)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        new(@"(\d+)\s*\+?\s*(ans)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        new(@"experience\s*:?\s*(\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        new(@"(\d+)\s+yrs", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-    };
-
     // Date range pattern: captures optional month + year on both sides
     // e.g. "Oct 2023 – Jan 2026", "2023 - 2026", "Jan 2022 – Present"
     private static readonly Regex DateRangePattern = new(
@@ -163,44 +150,15 @@ public class ResumeParserService : IResumeParserService
     }
 
     /// <summary>
-    /// Extract experience with month-level precision.
-    /// Strategy 1: Explicit "X years" → returns MAX as whole number.
-    /// Strategy 2: Date ranges with month parsing → SUM all durations (cap 20).
+    /// Extract experience using DATE-BASED parsing only.
+    /// Detects date ranges like "Jan 2023 – Present", "2022 - 2024".
+    /// Sums durations in months, converts to decimal years, clamped 0–40.
     /// </summary>
     private double ExtractExperienceYears(string normalizedText)
     {
-        // --- STRATEGY 0: Combined "X years Y months" pattern (highest precision) ---
-        var ymMatch = YearMonthPattern.Match(normalizedText);
-        if (ymMatch.Success)
-        {
-            int.TryParse(ymMatch.Groups[1].Value, out var y);
-            int.TryParse(ymMatch.Groups[2].Value, out var m);
-            var combined = Math.Round(y + m / 12.0, 2);
-            _logger.LogInformation("[EXPERIENCE DEBUG] Found year+month pattern: {Y}y {M}m = {Combined}", y, m, combined);
-            return combined;
-        }
-
-        // --- STRATEGY 1: Explicit "X years" patterns ---
-        int explicitMax = 0;
-        foreach (var pattern in ExplicitExperiencePatterns)
-        {
-            foreach (Match match in pattern.Matches(normalizedText))
-            {
-                if (int.TryParse(match.Groups[1].Value, out var years) && years > explicitMax)
-                    explicitMax = years;
-            }
-        }
-
-        if (explicitMax > 0)
-        {
-            _logger.LogInformation("[EXPERIENCE DEBUG] Found explicit years: {Years}", explicitMax);
-            return explicitMax;
-        }
-
-        // --- STRATEGY 2: Date range parsing with month precision ---
         var now = DateTime.UtcNow;
         var dateMatches = DateRangePattern.Matches(normalizedText);
-        double totalYears = 0;
+        int totalMonths = 0;
         var ranges = new List<string>();
 
         foreach (Match match in dateMatches)
@@ -231,29 +189,36 @@ public class ResumeParserService : IResumeParserService
 
             // Sanity check
             if (startYear < 1970 || endYear > now.Year + 1) continue;
+            if (startMonth < 1 || startMonth > 12) startMonth = 1;
+            if (endMonth < 1 || endMonth > 12) endMonth = 12;
+
             var startDate = new DateTime(startYear, startMonth, 1);
             var endDate = new DateTime(endYear, endMonth, 1);
             if (endDate < startDate) continue;
 
-            // Calculate months difference → years
             int monthsDiff = (endDate.Year - startDate.Year) * 12 + (endDate.Month - startDate.Month);
-            double duration = Math.Round(monthsDiff / 12.0, 1);
-            totalYears += duration;
-            ranges.Add($"{startMonthStr} {startYear} → {endMonthStr} {endYear} = {duration}y");
+            totalMonths += monthsDiff;
+
+            var rangeStr = $"{(string.IsNullOrWhiteSpace(startMonthStr) ? "" : startMonthStr + " ")}{startYear}" +
+                           $" → {(string.IsNullOrWhiteSpace(endMonthStr) ? "" : endMonthStr + " ")}{endYearStr}" +
+                           $" = {monthsDiff}mo";
+            ranges.Add(rangeStr);
+            _logger.LogInformation("[EXPERIENCE] Range detected: {Range}", rangeStr);
         }
 
-        // Cap at 20 years
-        if (totalYears > 20) totalYears = 20;
-        totalYears = Math.Round(totalYears, 1);
+        // Convert months to years, clamp 0–40
+        double totalYears = Math.Round(totalMonths / 12.0, 1);
+        totalYears = Math.Clamp(totalYears, 0, 40);
 
         if (ranges.Count > 0)
         {
-            _logger.LogInformation("[EXPERIENCE DEBUG] Date ranges: [{Ranges}], total: {Total}y",
-                string.Join(", ", ranges), totalYears);
+            _logger.LogInformation(
+                "[EXPERIENCE] Total: {Months} months = {Years} years from {Count} ranges",
+                totalMonths, totalYears, ranges.Count);
         }
         else
         {
-            _logger.LogInformation("[EXPERIENCE DEBUG] No explicit years or date ranges found.");
+            _logger.LogInformation("[EXPERIENCE] No date ranges found in resume text.");
         }
 
         return totalYears;

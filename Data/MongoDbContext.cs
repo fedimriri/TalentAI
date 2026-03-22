@@ -25,4 +25,6 @@ public class MongoDbContext
     public IMongoCollection<ParsedResume> ParsedResumes => _database.GetCollection<ParsedResume>("ParsedResumes");
     public IMongoCollection<ParsedJob> ParsedJobs => _database.GetCollection<ParsedJob>("ParsedJobs");
     public IMongoCollection<MatchingResult> MatchingResults => _database.GetCollection<MatchingResult>("MatchingResults");
+    public IMongoCollection<CandidateProfile> CandidateProfiles => _database.GetCollection<CandidateProfile>("CandidateProfiles");
+    public IMongoCollection<HRFeedback> HRFeedbacks => _database.GetCollection<HRFeedback>("HRFeedbacks");
 }

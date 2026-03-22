@@ -29,6 +29,9 @@
         <li>
             <a href="/candidate/ats-score" class="@(currentPath == "/candidate/ats-score" ? "active" : "")">ATS Score</a>
         </li>
+        <li>
+            <a href="/candidate/profile" class="@(currentPath == "/candidate/profile" ? "active" : "")">My Profile</a>
+        </li>
     </ul>
 
     <a href="/" onclick="fetch('/api/auth/logout', {method:'POST'}); sessionStorage.clear(); localStorage.clear();" class="logout-btn">Sign Out</a>
