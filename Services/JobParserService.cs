@@ -100,7 +100,7 @@ public class JobParserService : IJobParserService
     /// Extract required experience years using multiple regex patterns.
     /// Returns the FIRST valid match found across all patterns.
     /// </summary>
-    private static int ExtractExperienceYears(string normalizedText)
+    private static double ExtractExperienceYears(string normalizedText)
     {
         foreach (var pattern in ExperiencePatterns)
         {

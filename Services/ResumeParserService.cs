@@ -31,10 +31,28 @@ public class ResumeParserService : IResumeParserService
         new(@"(\d+)\s+yrs", RegexOptions.IgnoreCase | RegexOptions.Compiled),
     };
 
-    // Date range pattern ("2023 - 2026", "Oct 2023 – Present", "2020 – 2022")
+    // Date range pattern: captures optional month + year on both sides
+    // e.g. "Oct 2023 – Jan 2026", "2023 - 2026", "Jan 2022 – Present"
     private static readonly Regex DateRangePattern = new(
-        @"(\b\d{4})\s*[-–—]\s*(\d{4}|present|current|aujourd'hui|now)",
+        @"(?:(\w+)\s+)?(\d{4})\s*[-–—]\s*(?:(\w+)\s+)?(\d{4}|present|current|now|aujourd'hui)",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    // Month name → number mapping
+    private static readonly Dictionary<string, int> MonthMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "jan", 1 }, { "january", 1 },
+        { "feb", 2 }, { "february", 2 },
+        { "mar", 3 }, { "march", 3 },
+        { "apr", 4 }, { "april", 4 },
+        { "may", 5 },
+        { "jun", 6 }, { "june", 6 },
+        { "jul", 7 }, { "july", 7 },
+        { "aug", 8 }, { "august", 8 },
+        { "sep", 9 }, { "september", 9 },
+        { "oct", 10 }, { "october", 10 },
+        { "nov", 11 }, { "november", 11 },
+        { "dec", 12 }, { "december", 12 },
+    };
 
     public ResumeParserService(MongoDbContext context, ILogger<ResumeParserService> logger)
     {
@@ -76,11 +94,9 @@ public class ResumeParserService : IResumeParserService
             if (string.IsNullOrWhiteSpace(rawText))
             {
                 _logger.LogWarning("No text extracted from resume file: {FilePath}", filePath);
-                // Fall through to the single insert below (no double-insert)
             }
             else
             {
-                // Store original raw text
                 parsedResume.RawText = rawText;
 
                 // Normalize text for parsing (lowercase + collapse whitespace)
@@ -90,15 +106,12 @@ public class ResumeParserService : IResumeParserService
                 _logger.LogInformation("[RESUME PARSE] RawText length: {Len}, first 200 chars: {Preview}",
                     rawText.Length, rawText.Substring(0, Math.Min(200, rawText.Length)));
 
-                // Extract skills from normalized text
                 parsedResume.Skills = ExtractSkills(normalizedText);
                 _logger.LogInformation("[RESUME PARSE] Skills found: {Skills}", string.Join(", ", parsedResume.Skills));
 
-                // Extract experience years from normalized text
                 parsedResume.ExperienceYears = ExtractExperienceYears(normalizedText);
                 _logger.LogInformation("[RESUME PARSE] Final ExperienceYears: {Years}", parsedResume.ExperienceYears);
 
-                // Extract education from normalized text
                 parsedResume.Education = ExtractEducation(normalizedText);
                 _logger.LogInformation("[RESUME PARSE] Education: {Edu}", parsedResume.Education);
             }
@@ -106,33 +119,23 @@ public class ResumeParserService : IResumeParserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to parse resume file: {FilePath}", filePath);
-            // Return default/empty parsed resume — do not break the application flow
         }
 
-        // Single insert point — no double-insert possible
         await _context.ParsedResumes.InsertOneAsync(parsedResume);
         return parsedResume;
     }
 
-    /// <summary>
-    /// Extract text from a PDF file using PdfPig.
-    /// </summary>
     private string ExtractTextFromPdf(string filePath)
     {
         var sb = new StringBuilder();
-
         using var document = PdfDocument.Open(filePath);
         foreach (var page in document.GetPages())
         {
             sb.AppendLine(page.Text);
         }
-
         return sb.ToString();
     }
 
-    /// <summary>
-    /// Extract text from a DOCX file using OpenXml.
-    /// </summary>
     private string ExtractTextFromDocx(string filePath)
     {
         using var doc = WordprocessingDocument.Open(filePath, false);
@@ -140,37 +143,27 @@ public class ResumeParserService : IResumeParserService
         return body?.InnerText ?? string.Empty;
     }
 
-    /// <summary>
-    /// Match normalized resume text against predefined skill keywords.
-    /// Uses simple Contains on already-lowered text for reliable matching.
-    /// Returns display names (original casing) with no duplicates.
-    /// </summary>
     private static List<string> ExtractSkills(string normalizedText)
     {
         var found = new List<string>();
-
         for (int i = 0; i < ParsingKeywords.SkillKeywords.Length; i++)
         {
             if (normalizedText.Contains(ParsingKeywords.SkillKeywords[i]))
             {
                 var displayName = ParsingKeywords.SkillDisplayNames[i];
                 if (!found.Contains(displayName))
-                {
                     found.Add(displayName);
-                }
             }
         }
-
         return found;
     }
 
     /// <summary>
-    /// Extract years of experience using a two-strategy approach:
-    /// 1. Explicit patterns ("5 years") → use MAX if found
-    /// 2. Date ranges ("2023 – 2026") → SUM all durations (cap 20)
-    /// Explicit patterns take priority. Falls back to date ranges.
+    /// Extract experience with month-level precision.
+    /// Strategy 1: Explicit "X years" → returns MAX as whole number.
+    /// Strategy 2: Date ranges with month parsing → SUM all durations (cap 20).
     /// </summary>
-    private int ExtractExperienceYears(string normalizedText)
+    private double ExtractExperienceYears(string normalizedText)
     {
         // --- STRATEGY 1: Explicit "X years" patterns ---
         int explicitMax = 0;
@@ -179,9 +172,7 @@ public class ResumeParserService : IResumeParserService
             foreach (Match match in pattern.Matches(normalizedText))
             {
                 if (int.TryParse(match.Groups[1].Value, out var years) && years > explicitMax)
-                {
                     explicitMax = years;
-                }
             }
         }
 
@@ -191,51 +182,66 @@ public class ResumeParserService : IResumeParserService
             return explicitMax;
         }
 
-        // --- STRATEGY 2: Date range parsing ("2023 – 2026") ---
-        var currentYear = DateTime.UtcNow.Year;
+        // --- STRATEGY 2: Date range parsing with month precision ---
+        var now = DateTime.UtcNow;
         var dateMatches = DateRangePattern.Matches(normalizedText);
-        int totalFromDates = 0;
+        double totalYears = 0;
         var ranges = new List<string>();
 
         foreach (Match match in dateMatches)
         {
-            if (!int.TryParse(match.Groups[1].Value, out var startYear))
-                continue;
+            // Parse start
+            var startMonthStr = match.Groups[1].Value;
+            if (!int.TryParse(match.Groups[2].Value, out var startYear)) continue;
+            int startMonth = MonthMap.TryGetValue(startMonthStr, out var sm) ? sm : 1;
 
-            int endYear;
-            var endGroup = match.Groups[2].Value.ToLower();
-            if (endGroup == "present" || endGroup == "current" || endGroup == "now" || endGroup == "aujourd'hui")
+            // Parse end
+            var endMonthStr = match.Groups[3].Value;
+            var endYearStr = match.Groups[4].Value.ToLower();
+
+            int endYear, endMonth;
+            if (endYearStr is "present" or "current" or "now" or "aujourd'hui")
             {
-                endYear = currentYear;
+                endYear = now.Year;
+                endMonth = now.Month;
             }
-            else if (!int.TryParse(endGroup, out endYear))
+            else if (int.TryParse(endYearStr, out endYear))
+            {
+                endMonth = MonthMap.TryGetValue(endMonthStr, out var em) ? em : 12;
+            }
+            else
             {
                 continue;
             }
 
-            // Sanity: years must be reasonable (1970–future)
-            if (startYear < 1970 || endYear < startYear || endYear > currentYear + 1)
-                continue;
+            // Sanity check
+            if (startYear < 1970 || endYear > now.Year + 1) continue;
+            var startDate = new DateTime(startYear, startMonth, 1);
+            var endDate = new DateTime(endYear, endMonth, 1);
+            if (endDate < startDate) continue;
 
-            var duration = endYear - startYear;
-            totalFromDates += duration;
-            ranges.Add($"{startYear}-{endYear}={duration}y");
+            // Calculate months difference → years
+            int monthsDiff = (endDate.Year - startDate.Year) * 12 + (endDate.Month - startDate.Month);
+            double duration = Math.Round(monthsDiff / 12.0, 1);
+            totalYears += duration;
+            ranges.Add($"{startMonthStr} {startYear} → {endMonthStr} {endYear} = {duration}y");
         }
 
-        // Cap at 20 years to avoid absurd sums
-        if (totalFromDates > 20) totalFromDates = 20;
+        // Cap at 20 years
+        if (totalYears > 20) totalYears = 20;
+        totalYears = Math.Round(totalYears, 1);
 
         if (ranges.Count > 0)
         {
-            _logger.LogInformation("[EXPERIENCE DEBUG] Found date ranges: [{Ranges}], total: {Total}y",
-                string.Join(", ", ranges), totalFromDates);
+            _logger.LogInformation("[EXPERIENCE DEBUG] Date ranges: [{Ranges}], total: {Total}y",
+                string.Join(", ", ranges), totalYears);
         }
         else
         {
             _logger.LogInformation("[EXPERIENCE DEBUG] No explicit years or date ranges found.");
         }
 
-        return totalFromDates;
+        return totalYears;
     }
 
     /// <summary>

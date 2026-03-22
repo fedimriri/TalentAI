@@ -14,7 +14,7 @@ public class ParsedJob
 
     public List<string> RequiredSkills { get; set; } = new();
 
-    public int RequiredExperienceYears { get; set; }
+    public double RequiredExperienceYears { get; set; }
 
     public string RawDescription { get; set; } = string.Empty;
 

@@ -17,7 +17,7 @@ public class ParsedResume
 
     public List<string> Skills { get; set; } = new();
 
-    public int ExperienceYears { get; set; }
+    public double ExperienceYears { get; set; }
 
     public string Education { get; set; } = string.Empty;
 
