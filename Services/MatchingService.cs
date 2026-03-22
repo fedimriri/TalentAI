@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MongoDB.Driver;
 using TalentAI.Data;
 using TalentAI.Models;
@@ -9,9 +10,10 @@ public class MatchingService : IMatchingService
     private readonly MongoDbContext _context;
     private readonly ILogger<MatchingService> _logger;
 
-    // Scoring weights
-    private const double SkillWeight = 0.7;
-    private const double ExperienceWeight = 0.3;
+    // Default ATS weights (Skills=50%, Experience=30%, Education=20%)
+    private const double DefaultSkillWeight = 0.5;
+    private const double DefaultExperienceWeight = 0.3;
+    private const double DefaultEducationWeight = 0.2;
 
     public MatchingService(MongoDbContext context, ILogger<MatchingService> logger)
     {
@@ -21,7 +23,7 @@ public class MatchingService : IMatchingService
 
     public async Task<MatchingResult> CalculateMatchAsync(string jobId, string applicationId)
     {
-        // Check for existing match result (prevent duplicate)
+        // Prevent duplicate
         var existing = await _context.MatchingResults
             .Find(m => m.JobApplicationId == applicationId)
             .FirstOrDefaultAsync();
@@ -41,101 +43,164 @@ public class MatchingService : IMatchingService
             .Find(p => p.JobId == jobId)
             .FirstOrDefaultAsync();
 
-        // Build result object
-        var matchResult = new MatchingResult
+        // Build result with weights
+        var result = new MatchingResult
         {
             CandidateId = parsedResume?.CandidateId ?? string.Empty,
             JobId = jobId,
             JobApplicationId = applicationId,
+            SkillWeight = DefaultSkillWeight,
+            ExperienceWeight = DefaultExperienceWeight,
+            EducationWeight = DefaultEducationWeight,
             CreatedAt = DateTime.UtcNow
         };
 
-        // If either parsed data is missing, save empty result and return
+        // Missing data → save empty result
         if (parsedResume == null || parsedJob == null)
         {
             _logger.LogWarning(
-                "Missing parsed data for matching — ParsedResume: {HasResume}, ParsedJob: {HasJob} (App: {AppId})",
+                "Missing parsed data — Resume:{HasResume}, Job:{HasJob} (App:{AppId})",
                 parsedResume != null, parsedJob != null, applicationId);
 
-            await _context.MatchingResults.InsertOneAsync(matchResult);
-            return matchResult;
+            await _context.MatchingResults.InsertOneAsync(result);
+            return result;
         }
 
         try
         {
-            // --- SKILL MATCHING ---
-            var resumeSkills = parsedResume.Skills
-                .Select(s => s.ToLower())
-                .ToHashSet();
+            // Compute individual scores
+            ComputeSkillScore(result, parsedResume, parsedJob);
+            ComputeExperienceScore(result, parsedResume, parsedJob);
+            ComputeEducationScore(result, parsedResume);
+            ComputeTotalScore(result);
 
-            var jobSkills = parsedJob.RequiredSkills
-                .Select(s => s.ToLower())
-                .ToList();
-
-            var matchedSkills = jobSkills
-                .Where(s => resumeSkills.Contains(s))
-                .ToList();
-
-            var missingSkills = jobSkills
-                .Where(s => !resumeSkills.Contains(s))
-                .ToList();
-
-            // Map back to display names
-            matchResult.MatchedSkills = matchedSkills
-                .Select(s => GetDisplayName(s))
-                .ToList();
-
-            matchResult.MissingSkills = missingSkills
-                .Select(s => GetDisplayName(s))
-                .ToList();
-
-            // SkillMatchScore = (matched / required) * 100
-            matchResult.SkillMatchScore = jobSkills.Count > 0
-                ? Math.Round((double)matchedSkills.Count / jobSkills.Count * 100, 1)
-                : 0; // No required skills parsed = cannot score
-
-            // --- EXPERIENCE MATCHING ---
-            var resumeYears = parsedResume.ExperienceYears;
-            var jobYears = parsedJob.RequiredExperienceYears;
-
-            if (jobYears <= 0)
+            // Build ScoreBreakdown JSON
+            result.ScoreBreakdown = JsonSerializer.Serialize(new
             {
-                matchResult.ExperienceScore = 100; // No experience required
-            }
-            else if (resumeYears >= jobYears)
-            {
-                matchResult.ExperienceScore = 100;
-            }
-            else
-            {
-                matchResult.ExperienceScore = Math.Round((double)resumeYears / jobYears * 100, 1);
-            }
-
-            // --- TOTAL SCORE ---
-            matchResult.TotalScore = Math.Round(
-                (matchResult.SkillMatchScore * SkillWeight) +
-                (matchResult.ExperienceScore * ExperienceWeight),
-                1);
+                skills = result.SkillScore,
+                experience = result.ExperienceScore,
+                education = result.EducationScore,
+                total = result.TotalScore,
+                weights = new
+                {
+                    skills = result.SkillWeight,
+                    experience = result.ExperienceWeight,
+                    education = result.EducationWeight
+                },
+                matchedSkills = result.MatchedSkills,
+                missingSkills = result.MissingSkills
+            });
 
             _logger.LogInformation(
-                "[MATCHING] App:{AppId} | Skills:{SkillScore}% ({Matched}/{Total}) | Exp:{ExpScore}% | Total:{TotalScore}%",
-                applicationId, matchResult.SkillMatchScore,
-                matchedSkills.Count, jobSkills.Count,
-                matchResult.ExperienceScore, matchResult.TotalScore);
+                "[ATS SCORE] App:{AppId} Skills:{SkillScore} Experience:{ExpScore} Education:{EduScore} Total:{TotalScore}",
+                applicationId, result.SkillScore, result.ExperienceScore,
+                result.EducationScore, result.TotalScore);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to calculate match for application {ApplicationId}", applicationId);
-            // Leave scores at 0 — don't crash
+            _logger.LogError(ex, "Failed to calculate ATS score for application {ApplicationId}", applicationId);
         }
 
-        await _context.MatchingResults.InsertOneAsync(matchResult);
-        return matchResult;
+        await _context.MatchingResults.InsertOneAsync(result);
+        return result;
     }
 
     /// <summary>
-    /// Map a lowercase skill keyword back to its display name using ParsingKeywords.
+    /// SkillScore = (MatchedSkills / RequiredSkills) * 100
+    /// Fallback: 0 if no required skills.
     /// </summary>
+    private static void ComputeSkillScore(MatchingResult result, ParsedResume resume, ParsedJob job)
+    {
+        var resumeSkills = resume.Skills
+            .Select(s => s.Trim().ToLower())
+            .ToHashSet();
+
+        var jobSkills = job.RequiredSkills
+            .Select(s => s.Trim().ToLower())
+            .Distinct()
+            .ToList();
+
+        var matched = jobSkills.Where(s => resumeSkills.Contains(s)).ToList();
+        var missing = jobSkills.Where(s => !resumeSkills.Contains(s)).ToList();
+
+        result.MatchedSkills = matched.Select(GetDisplayName).ToList();
+        result.MissingSkills = missing.Select(GetDisplayName).ToList();
+
+        result.SkillScore = jobSkills.Count > 0
+            ? Math.Round((double)matched.Count / jobSkills.Count * 100, 1)
+            : 0;
+    }
+
+    /// <summary>
+    /// ExperienceScore: 100 if candidate >= required, else proportional.
+    /// Uses month-level precision (double).
+    /// </summary>
+    private static void ComputeExperienceScore(MatchingResult result, ParsedResume resume, ParsedJob job)
+    {
+        var candidateYears = resume.ExperienceYears;
+        var requiredYears = job.RequiredExperienceYears;
+
+        if (requiredYears <= 0)
+        {
+            result.ExperienceScore = 100;
+        }
+        else if (candidateYears >= requiredYears)
+        {
+            result.ExperienceScore = 100;
+        }
+        else
+        {
+            result.ExperienceScore = Math.Round(candidateYears / requiredYears * 100, 1);
+        }
+    }
+
+    /// <summary>
+    /// EducationScore based on keyword hierarchy:
+    /// PhD/Doctorate=100, Master/Engineering=80, Bachelor/Licence=60, Other=40.
+    /// </summary>
+    private static void ComputeEducationScore(MatchingResult result, ParsedResume resume)
+    {
+        var edu = (resume.Education ?? string.Empty).ToLower();
+
+        if (string.IsNullOrWhiteSpace(edu))
+        {
+            result.EducationScore = 40;
+            return;
+        }
+
+        if (edu.Contains("phd") || edu.Contains("doctorat") || edu.Contains("doctorate"))
+        {
+            result.EducationScore = 100;
+        }
+        else if (edu.Contains("master") || edu.Contains("engineering") ||
+                 edu.Contains("ingénieur") || edu.Contains("ingenieur") ||
+                 edu.Contains("mba") || edu.Contains("msc") || edu.Contains("m.sc"))
+        {
+            result.EducationScore = 80;
+        }
+        else if (edu.Contains("bachelor") || edu.Contains("licence") ||
+                 edu.Contains("bsc") || edu.Contains("b.sc") || edu.Contains("degree"))
+        {
+            result.EducationScore = 60;
+        }
+        else
+        {
+            result.EducationScore = 40;
+        }
+    }
+
+    /// <summary>
+    /// TotalScore = weighted sum of individual scores.
+    /// </summary>
+    private static void ComputeTotalScore(MatchingResult result)
+    {
+        result.TotalScore = Math.Round(
+            (result.SkillScore * result.SkillWeight) +
+            (result.ExperienceScore * result.ExperienceWeight) +
+            (result.EducationScore * result.EducationWeight),
+            1);
+    }
+
     private static string GetDisplayName(string lowercaseSkill)
     {
         for (int i = 0; i < ParsingKeywords.SkillKeywords.Length; i++)
@@ -143,6 +208,6 @@ public class MatchingService : IMatchingService
             if (ParsingKeywords.SkillKeywords[i] == lowercaseSkill)
                 return ParsingKeywords.SkillDisplayNames[i];
         }
-        return lowercaseSkill; // fallback
+        return lowercaseSkill;
     }
 }
