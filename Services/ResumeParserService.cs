@@ -22,14 +22,19 @@ public class ResumeParserService : IResumeParserService
         "computer science", "information technology"
     };
 
-    // Multiple regex patterns for robust experience extraction
-    private static readonly Regex[] ExperiencePatterns =
+    // Explicit experience patterns ("5 years", "3 ans", "experience: 4", "2 yrs")
+    private static readonly Regex[] ExplicitExperiencePatterns =
     {
         new(@"(\d+)\s*\+?\s*(years|year)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
         new(@"(\d+)\s*\+?\s*(ans)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
         new(@"experience\s*:?\s*(\d+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
         new(@"(\d+)\s+yrs", RegexOptions.IgnoreCase | RegexOptions.Compiled),
     };
+
+    // Date range pattern ("2023 - 2026", "Oct 2023 – Present", "2020 – 2022")
+    private static readonly Regex DateRangePattern = new(
+        @"(\b\d{4})\s*[-–—]\s*(\d{4}|present|current|aujourd'hui|now)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public ResumeParserService(MongoDbContext context, ILogger<ResumeParserService> logger)
     {
@@ -91,7 +96,7 @@ public class ResumeParserService : IResumeParserService
 
                 // Extract experience years from normalized text
                 parsedResume.ExperienceYears = ExtractExperienceYears(normalizedText);
-                _logger.LogInformation("[RESUME PARSE] ExperienceYears: {Years}", parsedResume.ExperienceYears);
+                _logger.LogInformation("[RESUME PARSE] Final ExperienceYears: {Years}", parsedResume.ExperienceYears);
 
                 // Extract education from normalized text
                 parsedResume.Education = ExtractEducation(normalizedText);
@@ -160,25 +165,77 @@ public class ResumeParserService : IResumeParserService
     }
 
     /// <summary>
-    /// Extract years of experience using multiple regex patterns.
-    /// Loops through all patterns and returns the MAX value found.
+    /// Extract years of experience using a two-strategy approach:
+    /// 1. Explicit patterns ("5 years") → use MAX if found
+    /// 2. Date ranges ("2023 – 2026") → SUM all durations (cap 20)
+    /// Explicit patterns take priority. Falls back to date ranges.
     /// </summary>
-    private static int ExtractExperienceYears(string normalizedText)
+    private int ExtractExperienceYears(string normalizedText)
     {
-        int maxYears = 0;
-
-        foreach (var pattern in ExperiencePatterns)
+        // --- STRATEGY 1: Explicit "X years" patterns ---
+        int explicitMax = 0;
+        foreach (var pattern in ExplicitExperiencePatterns)
         {
             foreach (Match match in pattern.Matches(normalizedText))
             {
-                if (int.TryParse(match.Groups[1].Value, out var years) && years > maxYears)
+                if (int.TryParse(match.Groups[1].Value, out var years) && years > explicitMax)
                 {
-                    maxYears = years;
+                    explicitMax = years;
                 }
             }
         }
 
-        return maxYears;
+        if (explicitMax > 0)
+        {
+            _logger.LogInformation("[EXPERIENCE DEBUG] Found explicit years: {Years}", explicitMax);
+            return explicitMax;
+        }
+
+        // --- STRATEGY 2: Date range parsing ("2023 – 2026") ---
+        var currentYear = DateTime.UtcNow.Year;
+        var dateMatches = DateRangePattern.Matches(normalizedText);
+        int totalFromDates = 0;
+        var ranges = new List<string>();
+
+        foreach (Match match in dateMatches)
+        {
+            if (!int.TryParse(match.Groups[1].Value, out var startYear))
+                continue;
+
+            int endYear;
+            var endGroup = match.Groups[2].Value.ToLower();
+            if (endGroup == "present" || endGroup == "current" || endGroup == "now" || endGroup == "aujourd'hui")
+            {
+                endYear = currentYear;
+            }
+            else if (!int.TryParse(endGroup, out endYear))
+            {
+                continue;
+            }
+
+            // Sanity: years must be reasonable (1970–future)
+            if (startYear < 1970 || endYear < startYear || endYear > currentYear + 1)
+                continue;
+
+            var duration = endYear - startYear;
+            totalFromDates += duration;
+            ranges.Add($"{startYear}-{endYear}={duration}y");
+        }
+
+        // Cap at 20 years to avoid absurd sums
+        if (totalFromDates > 20) totalFromDates = 20;
+
+        if (ranges.Count > 0)
+        {
+            _logger.LogInformation("[EXPERIENCE DEBUG] Found date ranges: [{Ranges}], total: {Total}y",
+                string.Join(", ", ranges), totalFromDates);
+        }
+        else
+        {
+            _logger.LogInformation("[EXPERIENCE DEBUG] No explicit years or date ranges found.");
+        }
+
+        return totalFromDates;
     }
 
     /// <summary>
