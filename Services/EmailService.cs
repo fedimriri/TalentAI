@@ -23,7 +23,7 @@ public class EmailService : IEmailService
         try
         {
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("TalentAI Admin", "no-reply@talentai.com"));
+            email.From.Add(new MailboxAddress("TalentAI Admin", _settings.FromEmail));
             email.To.Add(MailboxAddress.Parse(toEmail));
             email.Subject = "Your TalentAI HR Account Credentials";
 
@@ -45,11 +45,10 @@ public class EmailService : IEmailService
 
             using var smtp = new SmtpClient();
             
-            // Connect to Mailtrap SMTP
+            // Connect to Mailtrap Sandbox SMTP
             await smtp.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls);
             
-            // Mailtrap token-based SMTP uses 'api' as username and the API Token as the password
-            await smtp.AuthenticateAsync("api", _settings.Token);
+            await smtp.AuthenticateAsync(_settings.Username, _settings.Password);
             
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
