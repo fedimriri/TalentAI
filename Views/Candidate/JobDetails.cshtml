@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = Model.Title;
     bool hasApplied = ViewBag.HasApplied == true;
+    string appId = ViewBag.ApplicationId as string ?? "";
+    string appStatus = ViewBag.ApplicationStatus as string ?? "";
+    bool isApproved = appStatus == "Approved";
 }
 
 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
@@ -18,12 +21,36 @@
         </div>
     </div>
 
-    <div style="align-self: flex-end;">
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem;">
         @if (hasApplied)
         {
-            <div style="background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.75rem 1.5rem; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                Already Applied
+            <!-- Status badge -->
+            <div style="background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.6rem 1.25rem; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.9rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Applied — @appStatus
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                <a href="/candidate/edit-resume/@appId"
+                   style="padding: 0.45rem 0.9rem; background: rgba(56,189,248,0.12); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: var(--radius); text-decoration: none; font-size: 0.85rem; font-weight: 500;">
+                    Edit Resume
+                </a>
+
+                @if (!isApproved)
+                {
+                    <a href="/candidate/application/edit/@appId"
+                       style="padding: 0.45rem 0.9rem; background: rgba(250,204,21,0.12); color: #facc15; border: 1px solid rgba(250,204,21,0.3); border-radius: var(--radius); text-decoration: none; font-size: 0.85rem; font-weight: 500;">
+                        Replace Resume
+                    </a>
+
+                    <form method="post" action="/candidate/application/delete/@appId" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this application?');">
+                        <button type="submit"
+                                style="padding: 0.45rem 0.9rem; background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius); cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                            Delete Application
+                        </button>
+                    </form>
+                }
             </div>
         }
         else if (Model.Deadline < DateTime.UtcNow)

@@ -72,10 +72,12 @@ public class CandidateController : Controller
 
         var candidateId = HttpContext.Session.GetString("UserId")!;
         var appliedJobs = await _userService.GetAppliedJobsForCandidateAsync(candidateId);
-        
-        // Pass info if already applied
-        ViewBag.HasApplied = appliedJobs.Any(a => a.JobId == id);
-        
+        var applied = appliedJobs.FirstOrDefault(a => a.JobId == id);
+
+        ViewBag.HasApplied = applied != null;
+        ViewBag.ApplicationId = applied?.ApplicationId;
+        ViewBag.ApplicationStatus = applied?.Status;
+
         return View(job);
     }
 
