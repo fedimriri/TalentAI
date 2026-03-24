@@ -24,7 +24,6 @@
 
 📍 Tunis, Tunisia
 📧 [fmriri2@gmail.com](mailto:fmriri2@gmail.com)
-📞 +216 51 850 178
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/fadi-mriri)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/fedimriri)

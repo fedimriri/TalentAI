@@ -10,7 +10,7 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MongoSettings__ConnectionString=mongodb://tek-up:tek-up@mongodb:27017/?authSource=admin
+      - MongoSettings__ConnectionString=mongodb://user:pass@mongodb:27017/?authSource=admin
     networks:
       - mongo_net
 
@@ -18,8 +18,8 @@ services:
     image: mongodb/mongodb-community-server
     container_name: mongodb
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=tek-up
-      - MONGO_INITDB_ROOT_PASSWORD=tek-up
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=pass
     volumes:
       - mongo-data:/data/db
     ports:
@@ -30,11 +30,11 @@ services:
     image: mongo-express
     container_name: express  
     environment:
-        - ME_CONFIG_MONGODB_ADMINUSERNAME=tek-up
-        - ME_CONFIG_MONGODB_ADMINPASSWORD=tek-up
+        - ME_CONFIG_MONGODB_ADMINUSERNAME=user
+        - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
         - ME_CONFIG_MONGODB_SERVER=mongodb
-        - ME_CONFIG_BASICAUTH_USERNAME=tek-up
-        - ME_CONFIG_BASICAUTH_PASSWORD=tek-up
+        - ME_CONFIG_BASICAUTH_USERNAME=user
+        - ME_CONFIG_BASICAUTH_PASSWORD=pass
     ports:
         - "8081:8081"
     depends_on:
