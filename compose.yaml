@@ -1,7 +1,49 @@
-﻿services:
+services:
   talentai:
+    container_name: talentai
     image: talentai
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - MongoSettings__ConnectionString=mongodb://tek-up:tek-up@mongodb:27017
+    networks:
+      - default
+      - mongo_net
 
+  mongodb:
+    image: mongodb/mongodb-community-server
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=tek-up
+      - MONGO_INITDB_ROOT_PASSWORD=tek-up
+    volumes:
+      - data:/data/db
+    ports:
+      - "27017:27017"
+
+  express:
+    image: mongo-express
+    container_name: express  
+    environment:
+        - ME_CONFIG_MONGODB_ADMINUSERNAME=tek-up
+        - ME_CONFIG_MONGODB_ADMINPASSWORD=tek-up
+        - ME_CONFIG_MONGODB_SERVER=mongodb
+        - ME_CONFIG_BASICAUTH_USERNAME=tek-up
+        - ME_CONFIG_BASICAUTH_PASSWORD=tek-up
+    ports:
+        - "8081:8081"
+    depends_on:
+        - mongodb
+
+volumes:
+  mongo-data:
+networks:
+  # Connect to the external network created by the other docker-compose project
+  mongo_net:
+    external: false
+    name: mongo_default
