@@ -47,7 +47,7 @@ public class AuthService : IAuthService
     public async Task SeedAdminAsync()
     {
         var adminExists = await _context.Users
-            .Find(u => u.Email == "admin@talentai.com")
+            .Find(u => u.Email == "admin@talentai.com" && u.Role == "Admin")
             .AnyAsync();
 
         if (!adminExists)
@@ -57,10 +57,17 @@ public class AuthService : IAuthService
                 Email = "admin@talentai.com",
                 Password = "admin123",
                 Role = "Admin",
+                FirstName = "System",
+                LastName = "Admin",
                 CreatedAt = DateTime.UtcNow
             };
 
             await _context.Users.InsertOneAsync(admin);
+            Console.WriteLine("[SEED] Admin account created (admin@talentai.com)");
+        }
+        else
+        {
+            Console.WriteLine("[SEED] Admin account already exists");
         }
     }
 }
