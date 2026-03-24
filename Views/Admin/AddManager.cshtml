@@ -54,7 +54,7 @@
         @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Email"]?.Errors.Count > 0)
         {
             <div class="response-message error">
-                @ViewData.ModelState["Email"].Errors[0].ErrorMessage
+                @ViewData.ModelState["Email"]?.Errors[0].ErrorMessage
             </div>
         }
 

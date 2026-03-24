@@ -19,7 +19,7 @@ builder.Services.AddHttpClient<IAtsScoringService, AtsScoringService>();
 
 // Bind Settings from appsettings.json
 builder.Services.Configure<AISettings>(builder.Configuration.GetSection("AISettings"));
-builder.Services.Configure<MailtrapSettings>(builder.Configuration.GetSection("MailtrapSettings"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 

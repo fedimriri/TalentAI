@@ -13,15 +13,17 @@ public class HRController : Controller
     private readonly IJobService _jobService;
     private readonly IUserService _userService;
     private readonly IJobParserService _jobParser;
+    private readonly IEmailService _emailService;
     private readonly MongoDbContext _context;
     private readonly ILogger<HRController> _logger;
 
     public HRController(IJobService jobService, IUserService userService,
-        IJobParserService jobParser, MongoDbContext context, ILogger<HRController> logger)
+        IJobParserService jobParser, IEmailService emailService, MongoDbContext context, ILogger<HRController> logger)
     {
         _jobService = jobService;
         _userService = userService;
         _jobParser = jobParser;
+        _emailService = emailService;
         _context = context;
         _logger = logger;
     }
@@ -233,6 +235,19 @@ public class HRController : Controller
         if (success)
         {
             TempData["SuccessMessage"] = $"Application status updated to \"{newStatus}\".";
+
+            // Send candidate status notification email
+            var application = await _jobService.GetApplicationByIdAsync(id);
+            if (application != null && !string.IsNullOrEmpty(application.CandidateEmail))
+            {
+                var job = await _jobService.GetJobByIdAsync(application.JobId);
+                var jobTitle = job?.Title ?? "Unknown Job";
+                await _emailService.SendCandidateStatusEmailAsync(
+                    application.CandidateEmail,
+                    newStatus,
+                    jobTitle
+                );
+            }
         }
         else
         {

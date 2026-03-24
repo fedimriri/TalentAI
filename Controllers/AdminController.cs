@@ -72,8 +72,8 @@ public class AdminController : Controller
             return View(dto);
         }
 
-        // Send email notification asynchronously without awaiting on the main thread
-        _ = _emailService.SendHRCredentialsAsync(dto.Email, dto.Password);
+        // Send email notification with credentials
+        await _emailService.SendHRCredentialsAsync(dto.Email, dto.Password);
 
         TempData["SuccessMessage"] = $"HR account for {dto.Email} created successfully! An email with credentials has been sent.";
         return RedirectToAction(nameof(AddManager));
