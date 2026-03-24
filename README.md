@@ -1,42 +1,154 @@
-# TalentAI
+<p align="center">
+  <img src="screenshots/login.png" alt="TalentAI" width="600"/>
+</p>
 
-An intelligent Applicant Tracking System (ATS) powered by AI for modern recruitment workflows.
+<h1 align="center">TalentAI — AI-Powered Recruitment & ATS Platform</h1>
 
-## Overview
+<p align="center">
+  <em>An intelligent recruitment platform combining Resume Parsing, ATS Scoring, and AI Matching — built for modern hiring workflows.</em>
+</p>
 
-TalentAI streamlines the hiring process by combining resume parsing, job description analysis, AI-powered candidate matching, and ATS scoring — all within a clean MVC web application.
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10"/>
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/>
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/AI-Powered-FF6F00?style=for-the-badge&logo=openai&logoColor=white" alt="AI Powered"/>
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License"/>
+</p>
 
-## Features
+---
 
-- **Resume Parsing** — Automatically extracts skills, experience, and education from uploaded PDFs
-- **Job Description Parsing** — Analyzes job postings to identify required skills and experience
-- **ATS Scoring** — Scores candidates against job requirements across skills, experience, and education
-- **AI Matching** — Intelligent candidate-to-job matching with detailed score breakdowns
-- **HR Management** — Admin creates HR accounts with automatic email credential delivery
-- **Application Status Notifications** — Candidates receive branded emails (Approved / Rejected / Under Review)
-- **Candidate Portal** — Candidates can apply for jobs, upload resumes, and track application status
+## 👨‍💻 Author
 
-## Tech Stack
+**Fadi Mriri** — Cloud & DevOps Engineer
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | ASP.NET Core MVC (.NET 10) |
-| Database | MongoDB |
-| Email | Gmail SMTP via MailKit |
-| PDF Parsing | PdfPig |
-| Containerization | Docker |
+📍 Tunis, Tunisia
+📧 [fmriri2@gmail.com](mailto:fmriri2@gmail.com)
+📞 +216 51 850 178
 
-## Prerequisites
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/fadi-mriri)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/fedimriri)
+[![Portfolio](https://img.shields.io/badge/Portfolio-8b5cf6?style=flat&logo=vercel&logoColor=white)](https://fadimriri-portfolio.vercel.app)
+
+---
+
+## 🚀 Overview
+
+TalentAI is an **end-to-end AI-powered recruitment platform** designed to automate and enhance the hiring pipeline:
+
+- **Parse resumes** into structured candidate profiles (skills, experience, education)
+- **Analyze job descriptions** to extract requirements automatically
+- **Score candidates** with an ATS engine across multiple dimensions
+- **Match candidates to jobs** using AI-driven semantic analysis
+- **Streamline HR workflows** with role-based dashboards and email notifications
+
+---
+
+## ✨ Features
+
+### 🎯 Candidate Side
+- Resume Upload & Parsing (PDF / DOCX)
+- ATS Score Simulation
+- Resume Editing & Profile Management
+- Job Application Tracking
+
+### 📋 HR Side
+- Job Posting & Management
+- Candidate Ranking (ATS + AI Score)
+- Application Status Management (Approve / Reject / Shortlist)
+- Secure Resume Viewing
+- Filtering by Skills, Score & Experience
+
+### 🧠 AI & Core Engine
+| Phase | Module | Description |
+|-------|--------|-------------|
+| 3.1 | **Resume Parser** | Extracts skills, experience ranges, education from raw documents |
+| 3.2 | **Job Description Analyzer** | Identifies required skills, experience years, qualifications |
+| 3.3 | **Matching Algorithm** | Multi-dimensional scoring across skills, experience, education |
+| 3.4 | **ATS Scoring** | Weighted composite score with detailed breakdown |
+| 3.5 | **AI Semantic Matching** | Groq API (LLaMA) for intelligent context-aware matching |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        ASP.NET Core MVC                         │
+│                     (Controllers + Views)                       │
+├─────────────┬───────────────┬───────────────┬───────────────────┤
+│  Auth       │  Admin        │  HR           │  Candidate        │
+│  Controller │  Controller   │  Controller   │  Controller       │
+├─────────────┴───────────────┴───────────────┴───────────────────┤
+│                        Services Layer                           │
+├──────────┬──────────┬──────────┬──────────┬─────────────────────┤
+│ Resume   │ Job      │ ATS      │ Matching │ Email               │
+│ Parser   │ Parser   │ Scoring  │ Service  │ Service             │
+├──────────┴──────────┴──────────┴──────────┴─────────────────────┤
+│                     AI Integration (Groq API)                   │
+├─────────────────────────────────────────────────────────────────┤
+│                MongoDB (NoSQL Data Layer)                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| **Backend** | ASP.NET Core MVC (.NET 10) |
+| **Database** | MongoDB |
+| **AI** | Groq API (LLaMA models) |
+| **PDF Parsing** | PdfPig |
+| **DOCX Parsing** | OpenXML SDK |
+| **Email** | Gmail SMTP via MailKit |
+| **Containerization** | Docker & Docker Compose |
+| **DevOps** | CI/CD Ready, Multi-stage Docker Build |
+
+---
+
+## 📸 Screenshots
+
+<details>
+<summary><strong>🔐 Login Page</strong></summary>
+<br/>
+<img src="screenshots/login.png" alt="Login Page" width="700"/>
+</details>
+
+<details>
+<summary><strong>🛡️ Admin Dashboard</strong></summary>
+<br/>
+<img src="screenshots/admin_dashboard.png" alt="Admin Dashboard" width="700"/>
+</details>
+
+<details>
+<summary><strong>📋 HR Dashboard — Jobs Feed</strong></summary>
+<br/>
+<img src="screenshots/hr_dashboard.png" alt="HR Dashboard" width="700"/>
+</details>
+
+<details>
+<summary><strong>📝 Create Job Listing</strong></summary>
+<br/>
+<img src="screenshots/add_job.png" alt="Add Job Page" width="700"/>
+</details>
+
+---
+
+## ⚙️ Installation
+
+### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - MongoDB (local or containerized)
-- Docker (optional, for containerized deployment)
+- Docker *(optional)*
 
-## Run Locally
+### Run Locally
 
 ```bash
 # Clone the repository
-git clone <repo-url>
+git clone https://github.com/fedimriri/TalentAI.git
 cd TalentAI
 
 # Restore dependencies
@@ -46,21 +158,11 @@ dotnet restore
 dotnet run
 ```
 
-The app will be available at: **http://localhost:5000**
+App available at: **http://localhost:5000**
 
-## Default Admin Account
+---
 
-On first startup, the application automatically seeds an admin account:
-
-| Field | Value |
-|-------|-------|
-| Email | `admin@talentai.com` |
-| Password | `admin123` |
-| Role | Admin |
-
-> **Note:** Change these credentials in a production environment.
-
-## Run with Docker
+## 🐳 Run with Docker
 
 ```bash
 # Build the image
@@ -70,59 +172,94 @@ docker build -t talentai .
 docker run -p 5000:5000 talentai
 ```
 
-Or using Docker Compose:
+**Using Docker Compose** (connects to external MongoDB):
 
 ```bash
 docker compose up --build
 ```
 
-## MongoDB Setup
+> **Note:** If your MongoDB runs in a separate compose project, TalentAI automatically joins the external `mongo_default` network to connect.
 
-Make sure MongoDB is running before starting the application.
+---
 
-**Option 1 — Local installation:**
-```bash
-mongod --dbpath /data/db
-```
+## 🔐 Default Admin
 
-**Option 2 — Docker container:**
-```bash
-docker run -d -p 27017:27017 \
-  -e MONGO_INITDB_ROOT_USERNAME=tek-up \
-  -e MONGO_INITDB_ROOT_PASSWORD=tek-up \
-  mongo
-```
+On first startup, the app auto-seeds an admin account:
 
-## Configuration
+| Field | Value |
+|-------|-------|
+| Email | `admin@talentai.com` |
+| Password | `admin123` |
+| Role | Admin |
 
-All settings are managed in `appsettings.json`:
+> ⚠️ **Change these credentials in production.**
 
-| Section | Purpose |
-|---------|---------|
-| `MongoSettings` | MongoDB connection string and database name |
-| `EmailSettings` | Gmail SMTP credentials (host, port, username, app password) |
-| `AISettings` | API key for AI-powered features |
+---
 
-## Project Structure
+## ⚙️ Configuration
+
+All settings are in `appsettings.json`:
+
+| Section | Purpose | Key Values |
+|---------|---------|------------|
+| `MongoSettings` | Database connection | `ConnectionString`, `DatabaseName` |
+| `AISettings` | AI integration | `GroqApiKey` |
+| `EmailSettings` | SMTP notifications | `Host`, `Port`, `Username`, `Password`, `FromEmail` |
+
+### SMTP (Gmail)
+The app sends branded HTML emails for:
+- HR account creation (purple theme)
+- Application approved (green theme)
+- Application rejected (red theme)
+- Application under review (blue theme)
+
+---
+
+## 📁 Project Structure
 
 ```
 TalentAI/
-├── Configurations/    # Settings classes (MongoSettings, EmailSettings, etc.)
-├── Controllers/       # MVC controllers (Admin, HR, Candidate, Auth)
-├── DTOs/              # Data transfer objects
-├── Data/              # MongoDB context
-├── Models/            # Domain models (User, Job, JobApplication, etc.)
-├── Repositories/      # Data access layer
-├── Services/          # Business logic (Email, Matching, Parsing, etc.)
-├── Views/             # Razor views
-├── wwwroot/           # Static files and uploaded resumes
-├── Program.cs         # Application entry point and DI configuration
-└── Dockerfile         # Container build instructions
+├── Configurations/       # Settings: Mongo, Email, AI
+├── Controllers/          # MVC: Auth, Admin, HR, Candidate
+├── Data/                 # MongoDbContext
+├── DTOs/                 # Data Transfer Objects
+├── Models/               # User, Job, JobApplication
+├── Services/             # Core Business Logic
+│   ├── ResumeParserService.cs
+│   ├── JobParserService.cs
+│   ├── MatchingService.cs
+│   ├── AtsScoringService.cs
+│   ├── EmailService.cs
+│   └── EmailTemplateBuilder.cs
+├── Views/                # Razor Views (dark-theme UI)
+├── wwwroot/              # Static files & uploads
+├── Dockerfile            # Multi-stage production build
+├── compose.yaml          # Docker Compose config
+└── Program.cs            # Entry point & DI setup
 ```
 
-## Notes
+---
 
-- Uploaded resumes are stored in `wwwroot/uploads/`
-- AI features (matching, parsing) require a valid API key in `AISettings`
-- Email sending uses Gmail App Password (not regular Gmail password)
-- Email failures are logged but do not break application flow
+## 📄 License
+
+MIT License © 2026 **Fadi Mriri**
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. **Do not** push directly to `main`
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Submit a Pull Request with a clear description
+
+---
+
+<p align="center">
+  <strong>Built with a strong focus on DevOps, scalability, and AI-driven recruitment systems.</strong>
+</p>
+
+<p align="center">
+  <sub>⭐ Star this repo if you find it useful!</sub>
+</p>
