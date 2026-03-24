@@ -10,9 +10,8 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MongoSettings__ConnectionString=mongodb://tek-up:tek-up@mongodb:27017
+      - MongoSettings__ConnectionString=mongodb://tek-up:tek-up@mongodb:27017/?authSource=admin
     networks:
-      - default
       - mongo_net
 
   mongodb:
@@ -22,10 +21,11 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=tek-up
       - MONGO_INITDB_ROOT_PASSWORD=tek-up
     volumes:
-      - data:/data/db
+      - mongo-data:/data/db
     ports:
       - "27017:27017"
-
+    networks:
+    - mongo_net
   express:
     image: mongo-express
     container_name: express  
@@ -39,11 +39,15 @@ services:
         - "8081:8081"
     depends_on:
         - mongodb
+    networks:
+    - mongo_net
 
 volumes:
   mongo-data:
+
 networks:
-  # Connect to the external network created by the other docker-compose project
   mongo_net:
     external: false
-    name: mongo_default
+    name: mongo_net
+
+
