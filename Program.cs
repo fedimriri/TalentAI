@@ -38,8 +38,7 @@ var emailFrom = Environment.GetEnvironmentVariable("EMAIL_FROM");
 if (!string.IsNullOrEmpty(emailFrom))
     builder.Configuration["EmailSettings:FromEmail"] = emailFrom;
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Run($"http://0.0.0.0:{port}");
+
 
 builder.Services.Configure<MongoSettings>(
     builder.Configuration.GetSection("MongoSettings"));
@@ -116,4 +115,5 @@ app.UseStaticFiles();
 
 app.MapControllers();
 
-app.Run();
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Run($"http://0.0.0.0:{port}");
