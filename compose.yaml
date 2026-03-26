@@ -12,11 +12,14 @@ services:
     environment:
       - MONGO_CONNECTION_STRING=mongodb://user:pass@mongodb:27017/?authSource=admin
       - GROQ_API_KEY=${GROQ_API_KEY}
-      - EMAIL_HOST=${EMAIL_HOST}
-      - EMAIL_PORT=${EMAIL_PORT}
-      - EMAIL_USERNAME=${EMAIL_USERNAME}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
       - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_FROM_NAME=${EMAIL_FROM_NAME}
+      # --- SMTP (uncomment if switching back to MailKit) ---
+      # - EMAIL_HOST=${EMAIL_HOST}
+      # - EMAIL_PORT=${EMAIL_PORT}
+      # - EMAIL_USERNAME=${EMAIL_USERNAME}
+      # - EMAIL_PASSWORD=${EMAIL_PASSWORD}
     networks:
       - mongo_net
 

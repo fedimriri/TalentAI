@@ -17,26 +17,35 @@ var groqApiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY");
 if (!string.IsNullOrEmpty(groqApiKey))
     builder.Configuration["AISettings:GroqApiKey"] = groqApiKey;
 
-// Override Email settings from environment variables
-var emailHost = Environment.GetEnvironmentVariable("EMAIL_HOST");
-if (!string.IsNullOrEmpty(emailHost))
-    builder.Configuration["EmailSettings:Host"] = emailHost;
-
-var emailPort = Environment.GetEnvironmentVariable("EMAIL_PORT");
-if (!string.IsNullOrEmpty(emailPort))
-    builder.Configuration["EmailSettings:Port"] = emailPort;
-
-var emailUsername = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
-if (!string.IsNullOrEmpty(emailUsername))
-    builder.Configuration["EmailSettings:Username"] = emailUsername;
-
-var emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
-if (!string.IsNullOrEmpty(emailPassword))
-    builder.Configuration["EmailSettings:Password"] = emailPassword;
+// Override Email settings from environment variables (SendGrid — PRODUCTION)
+var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+if (!string.IsNullOrEmpty(sendGridApiKey))
+    builder.Configuration["EmailSettings:SendGridApiKey"] = sendGridApiKey;
 
 var emailFrom = Environment.GetEnvironmentVariable("EMAIL_FROM");
 if (!string.IsNullOrEmpty(emailFrom))
     builder.Configuration["EmailSettings:FromEmail"] = emailFrom;
+
+var emailFromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
+if (!string.IsNullOrEmpty(emailFromName))
+    builder.Configuration["EmailSettings:FromName"] = emailFromName;
+
+// --- SMTP overrides (uncomment if switching back to MailKit locally) ---
+// var emailHost = Environment.GetEnvironmentVariable("EMAIL_HOST");
+// if (!string.IsNullOrEmpty(emailHost))
+//     builder.Configuration["EmailSettings:Host"] = emailHost;
+//
+// var emailPort = Environment.GetEnvironmentVariable("EMAIL_PORT");
+// if (!string.IsNullOrEmpty(emailPort))
+//     builder.Configuration["EmailSettings:Port"] = emailPort;
+//
+// var emailUsername = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
+// if (!string.IsNullOrEmpty(emailUsername))
+//     builder.Configuration["EmailSettings:Username"] = emailUsername;
+//
+// var emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+// if (!string.IsNullOrEmpty(emailPassword))
+//     builder.Configuration["EmailSettings:Password"] = emailPassword;
 
 
 
