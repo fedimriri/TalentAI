@@ -1,0 +1,4 @@
+services:
+  talentai:
+    environment:
+      - MONGO_CONNECTION_STRING=${MONGO_ATLAS_CONNECTION}

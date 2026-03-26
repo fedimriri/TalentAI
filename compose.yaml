@@ -10,7 +10,13 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MongoSettings__ConnectionString=mongodb://user:pass@mongodb:27017/?authSource=admin
+      - MONGO_CONNECTION_STRING=mongodb://user:pass@mongodb:27017/?authSource=admin
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USERNAME=${EMAIL_USERNAME}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_FROM=${EMAIL_FROM}
     networks:
       - mongo_net
 
@@ -25,22 +31,23 @@ services:
     ports:
       - "27017:27017"
     networks:
-    - mongo_net
+      - mongo_net
+
   express:
     image: mongo-express
-    container_name: express  
+    container_name: express
     environment:
-        - ME_CONFIG_MONGODB_ADMINUSERNAME=user
-        - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
-        - ME_CONFIG_MONGODB_SERVER=mongodb
-        - ME_CONFIG_BASICAUTH_USERNAME=user
-        - ME_CONFIG_BASICAUTH_PASSWORD=pass
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=user
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=user
+      - ME_CONFIG_BASICAUTH_PASSWORD=pass
     ports:
-        - "8081:8081"
+      - "8081:8081"
     depends_on:
-        - mongodb
+      - mongodb
     networks:
-    - mongo_net
+      - mongo_net
 
 volumes:
   mongo-data:
