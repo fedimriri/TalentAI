@@ -6,16 +6,16 @@
 // and comment out the SendGrid section.
 // ============================================================
 
-using SendGrid;
-using SendGrid.Helpers.Mail;
+// using SendGrid;
+// using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Options;
 using TalentAI.Configurations;
 
 // --- SMTP imports (uncomment if switching back to MailKit) ---
-// using MailKit.Net.Smtp;
-// using MailKit.Security;
-// using MimeKit;
-// using MimeKit.Text;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using MimeKit.Text;
 
 namespace TalentAI.Services;
 
@@ -91,45 +91,45 @@ public class EmailService : IEmailService
     /// Sends an email via SendGrid API with retry logic.
     /// Uses HTTPS API calls — no outbound SMTP ports required (Railway-compatible).
     /// </summary>
-    private async Task SendEmailAsync(string toEmail, string subject, string htmlContent)
-    {
-        const int maxRetries = 3;
+    // private async Task SendEmailAsync(string toEmail, string subject, string htmlContent)
+    // {
+    //     const int maxRetries = 3;
 
-        var client = new SendGridClient(_settings.SendGridApiKey);
-        var from = new EmailAddress(_settings.FromEmail, _settings.FromName);
-        var to = new EmailAddress(toEmail);
-        var msg = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
+    //     var client = new SendGridClient(_settings.SendGridApiKey);
+    //     var from = new EmailAddress(_settings.FromEmail, _settings.FromName);
+    //     var to = new EmailAddress(toEmail);
+    //     var msg = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++)
-        {
-            try
-            {
-                var response = await client.SendEmailAsync(msg);
+    //     for (int attempt = 1; attempt <= maxRetries; attempt++)
+    //     {
+    //         try
+    //         {
+    //             var response = await client.SendEmailAsync(msg);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return; // Success
-                }
+    //             if (response.IsSuccessStatusCode)
+    //             {
+    //                 return; // Success
+    //             }
 
-                var body = await response.Body.ReadAsStringAsync();
-                _logger.LogWarning("SendGrid returned {StatusCode} on attempt {Attempt}: {Body}",
-                    response.StatusCode, attempt, body);
+    //             var body = await response.Body.ReadAsStringAsync();
+    //             _logger.LogWarning("SendGrid returned {StatusCode} on attempt {Attempt}: {Body}",
+    //                 response.StatusCode, attempt, body);
 
-                if (attempt >= maxRetries)
-                {
-                    throw new Exception($"SendGrid failed after {maxRetries} attempts. " +
-                        $"Last status: {response.StatusCode}, Body: {body}");
-                }
-            }
-            catch (Exception) when (attempt < maxRetries)
-            {
-                var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1)); // 1s, 2s, 4s
-                _logger.LogWarning("SendGrid attempt {Attempt}/{MaxRetries} failed, retrying in {Delay}s...",
-                    attempt, maxRetries, delay.TotalSeconds);
-                await Task.Delay(delay);
-            }
-        }
-    }
+    //             if (attempt >= maxRetries)
+    //             {
+    //                 throw new Exception($"SendGrid failed after {maxRetries} attempts. " +
+    //                     $"Last status: {response.StatusCode}, Body: {body}");
+    //             }
+    //         }
+    //         catch (Exception) when (attempt < maxRetries)
+    //         {
+    //             var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1)); // 1s, 2s, 4s
+    //             _logger.LogWarning("SendGrid attempt {Attempt}/{MaxRetries} failed, retrying in {Delay}s...",
+    //                 attempt, maxRetries, delay.TotalSeconds);
+    //             await Task.Delay(delay);
+    //         }
+    //     }
+    // }
 
     // ============================================================
     // COMMENTED OUT: Gmail SMTP via MailKit (for local development)
@@ -142,28 +142,28 @@ public class EmailService : IEmailService
     //   5. Set EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD in .env
     // ============================================================
     //
-    // private async Task SendEmailAsync(MimeMessage email)
-    // {
-    //     const int maxRetries = 3;
-    //
-    //     for (int attempt = 1; attempt <= maxRetries; attempt++)
-    //     {
-    //         try
-    //         {
-    //             using var smtp = new SmtpClient();
-    //             await smtp.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls);
-    //             await smtp.AuthenticateAsync(_settings.Username, _settings.Password);
-    //             await smtp.SendAsync(email);
-    //             await smtp.DisconnectAsync(true);
-    //             return;
-    //         }
-    //         catch (Exception) when (attempt < maxRetries)
-    //         {
-    //             var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1));
-    //             _logger.LogWarning("SMTP attempt {Attempt}/{MaxRetries} failed, retrying in {Delay}s...",
-    //                 attempt, maxRetries, delay.TotalSeconds);
-    //             await Task.Delay(delay);
-    //         }
-    //     }
-    // }
+    private async Task SendEmailAsync(MimeMessage email)
+    {
+        const int maxRetries = 3;
+    
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_settings.Username, _settings.Password);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+                return;
+            }
+            catch (Exception) when (attempt < maxRetries)
+            {
+                var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1));
+                _logger.LogWarning("SMTP attempt {Attempt}/{MaxRetries} failed, retrying in {Delay}s...",
+                    attempt, maxRetries, delay.TotalSeconds);
+                await Task.Delay(delay);
+            }
+        }
+    }
 }
