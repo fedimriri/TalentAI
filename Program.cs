@@ -4,6 +4,8 @@ using TalentAI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load local .env into process environment, then configuration
+LoadDotEnv(builder.Environment.ContentRootPath);
 // Load environment variables into configuration
 builder.Configuration.AddEnvironmentVariables();
 
@@ -126,3 +128,34 @@ app.MapControllers();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Run($"http://0.0.0.0:{port}");
+
+static void LoadDotEnv(string contentRootPath)
+{
+    var dotEnvPath = Path.Combine(contentRootPath, ".env");
+
+    if (!File.Exists(dotEnvPath))
+    {
+        return;
+    }
+
+    foreach (var line in File.ReadAllLines(dotEnvPath))
+    {
+        var trimmedLine = line.Trim();
+
+        if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith('#') || !trimmedLine.Contains('='))
+        {
+            continue;
+        }
+
+        var separatorIndex = trimmedLine.IndexOf('=');
+        var key = trimmedLine[..separatorIndex].Trim();
+        var value = trimmedLine[(separatorIndex + 1)..].Trim();
+
+        if (string.IsNullOrEmpty(key) || Environment.GetEnvironmentVariable(key) is not null)
+        {
+            continue;
+        }
+
+        Environment.SetEnvironmentVariable(key, value, EnvironmentVariableTarget.Process);
+    }
+}

@@ -142,16 +142,41 @@ public class EmailService : IEmailService
     //   5. Set EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD in .env
     // ============================================================
     //
-    private async Task SendEmailAsync(MimeMessage email)
+   private async Task SendEmailAsync(string toEmail, string subject, string htmlContent)
     {
         const int maxRetries = 3;
-    
+
+        if (string.IsNullOrWhiteSpace(_settings.Host) ||
+            string.IsNullOrWhiteSpace(_settings.Username) ||
+            string.IsNullOrWhiteSpace(_settings.Password) ||
+            _settings.Port <= 0)
+        {
+            throw new InvalidOperationException("SMTP settings are missing. Check EmailSettings:Host, Port, Username, and Password.");
+        }
+
+        var fromAddress = string.IsNullOrWhiteSpace(_settings.Username)
+            ? "noreply@localhost"
+            : _settings.Username;
+
+        var email = new MimeMessage();
+        email.From.Add(MailboxAddress.Parse(fromAddress));
+        email.To.Add(MailboxAddress.Parse(toEmail));
+        email.Subject = subject;
+        email.Body = new TextPart(TextFormat.Html)
+        {
+            Text = htmlContent
+        };
+
         for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
             try
             {
                 using var smtp = new SmtpClient();
-                await smtp.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls);
+                var socketOptions = _settings.Port == 465
+                    ? SecureSocketOptions.SslOnConnect
+                    : SecureSocketOptions.StartTls;
+
+                await smtp.ConnectAsync(_settings.Host, _settings.Port, socketOptions);
                 await smtp.AuthenticateAsync(_settings.Username, _settings.Password);
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
@@ -165,5 +190,7 @@ public class EmailService : IEmailService
                 await Task.Delay(delay);
             }
         }
+
+        throw new InvalidOperationException($"Failed to send email to {toEmail} after {maxRetries} SMTP attempts.");
     }
 }
