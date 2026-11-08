@@ -1,0 +1,22 @@
+name: Docker Runner Smoke Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: [self-hosted, linux, talentai-docker]
+    timeout-minutes: 5
+
+    steps:
+      - name: Verify runner environment
+        run: |
+          echo "GitHub Actions runner is working"
+          whoami
+          uname -s
+          cat /etc/os-release
+          test -d "$GITHUB_WORKSPACE"
+          echo "Smoke test passed"
