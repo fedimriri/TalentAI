@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using MongoDB.Bson;
 using TalentAI.Configurations;
 using TalentAI.Models;
 using Microsoft.Extensions.Options;
@@ -15,12 +16,7 @@ public class MongoDbContext
         var connectionString = settings.Value.ConnectionString;
         var databaseName = settings.Value.DatabaseName;
 
-        // Log connection info without exposing credentials
-        var safeConnectionInfo = connectionString.Contains("@")
-            ? connectionString.Substring(connectionString.IndexOf('@'))
-            : connectionString;
-        logger.LogInformation("Connecting to MongoDB: ...{SafeConnectionInfo}, Database: {DatabaseName}",
-            safeConnectionInfo, databaseName);
+        logger.LogInformation("Initializing MongoDB client for configured database.");
 
         try
         {
@@ -37,10 +33,12 @@ public class MongoDbContext
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to initialize MongoDB client. Check your connection string.");
+            logger.LogError("Failed to initialize MongoDB client ({ErrorType}). Check configuration.", ex.GetType().Name);
             throw;
         }
     }
+
+    public async Task PingAsync() => await _database.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
 
     public IMongoCollection<User> Users =>
         _database.GetCollection<User>("Users");

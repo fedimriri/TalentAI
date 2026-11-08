@@ -9,3 +9,19 @@ wwwroot/uploads/
 .env
 .env.*
 appsettings.Development.json
+.vscode/
+# Terraform runtime and state
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+
+# Local deployment evidence with possible credentials
+labs/talentai-deployment/results/*.log
+appsettings.local.backup.json
+envirementfile.txt
+__pycache__/
+Dockerfile.backup
+*.lscache
+monitoring/.grafana-admin-password

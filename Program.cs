@@ -102,15 +102,19 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
-        await authService.SeedAdminAsync();
-        logger.LogInformation("Admin seed completed successfully. MongoDB connection verified.");
+        var mongoContext = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
+        await mongoContext.PingAsync();
+        logger.LogInformation("MongoDB connection verified.");
+        if (builder.Configuration.GetValue<bool>("SeedAdminAccount"))
+        {
+            var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+            await authService.SeedAdminAsync();
+        }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Failed to connect to MongoDB or seed admin account. " +
-            "Verify your MONGO_CONNECTION_STRING environment variable or MongoSettings in appsettings.json.");
-        throw; // Re-throw to prevent app from starting with a broken DB connection
+        logger.LogError("MongoDB startup check failed ({ErrorType}). Verify the private connection configuration.", ex.GetType().Name);
+        throw new InvalidOperationException("MongoDB startup check failed.");
     }
 }
 
@@ -123,6 +127,20 @@ app.UseSession();
 // Serve static files from wwwroot
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.MapGet("/health/live", () => Results.Ok(new { status = "live" }));
+app.MapGet("/health/ready", async (MongoDbContext db) =>
+{
+    try
+    {
+        await db.PingAsync();
+        return Results.Ok(new { status = "ready" });
+    }
+    catch
+    {
+        return Results.StatusCode(503);
+    }
+});
 
 app.MapControllers();
 
