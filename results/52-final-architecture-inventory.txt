@@ -1,0 +1,51 @@
+=== GIT STATUS ===
+?? labs/talentai-deployment/compte-rendu/README.md
+?? labs/talentai-deployment/compte-rendu/compte-rendu.docx
+?? labs/talentai-deployment/results/
+?? labs/talentai-deployment/screenshots/
+?? monitoring/ingress/
+?? monitoring/prometheus-values.yaml
+?? results/32-deployed-image.txt
+?? results/32-helm-status.txt
+?? results/32-kubernetes-resources.txt
+?? results/33-deployment-verification.txt
+?? results/34-hpa-after.txt
+?? results/34-hpa-before.txt
+?? results/34-hpa-load-test.txt
+?? results/40-dotnet-build-fixed.txt
+?? results/40-dotnet-build.txt
+?? results/40-dotnet-restore.txt
+?? results/43-cd-success.json
+?? results/43-cd-success.log
+?? results/45-kubernetes-architecture-audit.txt
+?? results/46-deployment-configuration-audit.txt
+?? results/47-storage-security-review.txt
+?? results/48-persistence-session-audit.txt
+?? results/49-terraform-ansible-inspection.txt
+?? results/50-monitoring-verification.txt
+?? results/51-logging-observability-audit.txt
+?? results/52-final-architecture-inventory.txt
+?? scripts/build_compte_rendu.py
+?? scripts/deploy-from-env.py
+=== CURRENT COMMIT ===
+72bb750 fix(ci): prevent artifact quota from failing deployment
+=== GITHUB ACTIONS WORKFLOWS ===
+.github/workflows/deploy-local.yml
+.github/workflows/runner-smoke-test.yml
+.github/workflows/ci.yml
+=== DOCKER AND KUBERNETES FILES ===
+./compose.atlas.yaml
+./compose.yaml
+./docker-compose.override.yml
+./Dockerfile
+./Dockerfile.backup
+./Dockerfile.before-security-fix
+./helm/talentai/Chart.yaml
+./helm/talentai/values.yaml
+./infrastructure/terraform/main.tf
+./monitoring/ingress/monitoring-ingress.yaml
+./monitoring/manifests/stack.yaml
+./monitoring/prometheus-values.yaml
+=== GITHUB RUNNER SERVICE ===
+=== DEPLOYED IMAGE ===
+fedimriri/talentai:597d0348d7175685a920f7d3d5268a59f78f0491

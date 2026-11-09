@@ -1,0 +1,16 @@
+# Values for prometheus-community/kube-prometheus-stack after cluster capacity is checked.
+alertmanager:
+  enabled: false
+prometheus:
+  prometheusSpec:
+    retention: 2d
+    resources:
+      requests: {cpu: 100m, memory: 256Mi}
+      limits: {cpu: 500m, memory: 768Mi}
+grafana:
+  replicas: 1
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 300m, memory: 384Mi}
+kubeStateMetrics:
+  enabled: true

@@ -1,0 +1,6 @@
+Sun Nov  8 07:11:45 PM CET 2026
+CONTAINER ID   IMAGE            COMMAND                 CREATED          STATUS         PORTS                                         NAMES
+e19840bb4407   talentai:local   "dotnet TalentAI.dll"   42 minutes ago   Up 9 minutes   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp   talentai-talentai-1
+/ HTTP 200
+/health/live HTTP 200
+/health/ready HTTP 200

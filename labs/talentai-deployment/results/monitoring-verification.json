@@ -1,0 +1,44 @@
+{
+  "targets": [
+    {
+      "job": "kubernetes-cadvisor",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "prometheus",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "talentai-availability",
+      "health": "up",
+      "lastError": ""
+    }
+  ],
+  "grafana_http": 200,
+  "grafana_database": "ok",
+  "dashboards": [
+    {
+      "title": "TalentAI",
+      "uid": "fg3pefnub0idcf"
+    },
+    {
+      "title": "TalentAI Overview",
+      "uid": "talentai-overview"
+    }
+  ],
+  "availability_samples": [
+    {
+      "metric": {
+        "__name__": "probe_success",
+        "instance": "http://talentai.talentai.svc.cluster.local/health/ready",
+        "job": "talentai-availability"
+      },
+      "value": [
+        1794162111.742,
+        "1"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+Sun Nov  8 07:22:47 PM CET 2026
+===== INGRESS =====
+NAME       CLASS   HOSTS            ADDRESS        PORTS   AGE
+talentai   nginx   talentai.local   192.168.49.2   80      52m
+===== HTTP VERIFICATION =====
+/ HTTP 200
+/health/live HTTP 200
+/health/ready HTTP 200

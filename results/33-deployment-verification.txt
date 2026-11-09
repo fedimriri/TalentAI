@@ -1,0 +1,22 @@
+2026-11-09T00:21:03+01:00
+NAME: talentai
+LAST DEPLOYED: Mon Nov  9 00:20:55 2026
+NAMESPACE: talentai
+STATUS: deployed
+REVISION: 9
+TEST SUITE: None
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/talentai   1/1     1            1           5h50m
+
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/talentai-7c56cc4879-pnmhr   1/1     Running   0          3m38s
+
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/talentai   ClusterIP   10.105.41.156   <none>        80/TCP    5h50m
+
+NAME                                 CLASS   HOSTS            ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/talentai   nginx   talentai.local   192.168.49.2   80      5h50m
+
+NAME                                           REFERENCE             TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/talentai   Deployment/talentai   cpu: 30%/70%   1         3         1          4h56m
+HTTP 200

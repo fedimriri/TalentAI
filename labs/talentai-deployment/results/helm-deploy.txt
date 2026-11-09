@@ -1,0 +1,9 @@
+secret/talentai-runtime created
+Release "talentai" does not exist. Installing it now.
+NAME: talentai
+LAST DEPLOYED: Sun Nov  8 18:30:07 2026
+NAMESPACE: talentai
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+deployment "talentai" successfully rolled out

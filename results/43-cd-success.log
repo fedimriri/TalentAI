@@ -1,0 +1,227 @@
+deploy	Set up job	﻿2026-11-09T01:07:47.1056670Z Current runner version: '2.338.2'
+deploy	Set up job	2026-11-09T01:07:47.1069561Z Runner name: 'talentai-host-runner'
+deploy	Set up job	2026-11-09T01:07:47.1070705Z Runner group name: 'Default'
+deploy	Set up job	2026-11-09T01:07:47.1071839Z Machine name: 'Dell'
+deploy	Set up job	2026-11-09T01:07:47.1081006Z ##[group]GITHUB_TOKEN Permissions
+deploy	Set up job	2026-11-09T01:07:47.1085910Z Contents: read
+deploy	Set up job	2026-11-09T01:07:47.1086753Z Metadata: read
+deploy	Set up job	2026-11-09T01:07:47.1087672Z ##[endgroup]
+deploy	Set up job	2026-11-09T01:07:47.1090745Z Secret source: Actions
+deploy	Set up job	2026-11-09T01:07:47.1092353Z Cache mode: write
+deploy	Set up job	2026-11-09T01:07:47.1093353Z Prepare workflow directory
+deploy	Set up job	2026-11-09T01:07:47.1900408Z Prepare all required actions
+deploy	Set up job	2026-11-09T01:07:47.2005940Z Getting action download info
+deploy	Set up job	2026-11-09T01:07:48.0030889Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+deploy	Set up job	2026-11-09T01:07:49.6169792Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+deploy	Set up job	2026-11-09T01:07:54.2087870Z Complete job name: deploy
+deploy	Checkout repository	﻿2026-11-09T01:07:54.6078506Z ##[group]Run actions/checkout@v4
+deploy	Checkout repository	2026-11-09T01:07:54.6082276Z with:
+deploy	Checkout repository	2026-11-09T01:07:54.6084704Z   persist-credentials: false
+deploy	Checkout repository	2026-11-09T01:07:54.6087417Z   repository: fedimriri/TalentAI
+deploy	Checkout repository	2026-11-09T01:07:54.6108252Z   token: ***
+deploy	Checkout repository	2026-11-09T01:07:54.6109710Z   ssh-strict: true
+deploy	Checkout repository	2026-11-09T01:07:54.6110786Z   ssh-user: git
+deploy	Checkout repository	2026-11-09T01:07:54.6112686Z   clean: true
+deploy	Checkout repository	2026-11-09T01:07:54.6114755Z   sparse-checkout-cone-mode: true
+deploy	Checkout repository	2026-11-09T01:07:54.6116505Z   fetch-depth: 1
+deploy	Checkout repository	2026-11-09T01:07:54.6117599Z   fetch-tags: false
+deploy	Checkout repository	2026-11-09T01:07:54.6118707Z   show-progress: true
+deploy	Checkout repository	2026-11-09T01:07:54.6119832Z   lfs: false
+deploy	Checkout repository	2026-11-09T01:07:54.6120875Z   submodules: false
+deploy	Checkout repository	2026-11-09T01:07:54.6122024Z   set-safe-directory: true
+deploy	Checkout repository	2026-11-09T01:07:54.6123311Z   allow-unsafe-pr-checkout: false
+deploy	Checkout repository	2026-11-09T01:07:54.6125899Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:54.8934545Z Syncing repository: fedimriri/TalentAI
+deploy	Checkout repository	2026-11-09T01:07:54.8943070Z ##[group]Getting Git version info
+deploy	Checkout repository	2026-11-09T01:07:54.8950684Z Working directory is '/home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner/_work/TalentAI/TalentAI'
+deploy	Checkout repository	2026-11-09T01:07:54.8960647Z [command]/usr/bin/git version
+deploy	Checkout repository	2026-11-09T01:07:54.8963953Z git version 2.53.0
+deploy	Checkout repository	2026-11-09T01:07:54.9004448Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:54.9026251Z Copying '/home/fadi/.gitconfig' to '/home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner/_work/_temp/ee2f9503-9106-42b5-83ce-349be0cd2c98/.gitconfig'
+deploy	Checkout repository	2026-11-09T01:07:54.9040072Z Temporarily overriding HOME='/home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner/_work/_temp/ee2f9503-9106-42b5-83ce-349be0cd2c98' before making global git config changes
+deploy	Checkout repository	2026-11-09T01:07:54.9131422Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Checkout repository	2026-11-09T01:07:54.9165359Z [command]/usr/bin/git config --global --add safe.directory /home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner/_work/TalentAI/TalentAI
+deploy	Checkout repository	2026-11-09T01:07:54.9186495Z [command]/usr/bin/git config --local --get remote.origin.url
+deploy	Checkout repository	2026-11-09T01:07:54.9226699Z https://github.com/fedimriri/TalentAI
+deploy	Checkout repository	2026-11-09T01:07:54.9298833Z ##[group]Removing previously created refs, to avoid conflicts
+deploy	Checkout repository	2026-11-09T01:07:54.9318928Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+deploy	Checkout repository	2026-11-09T01:07:54.9388145Z refs/heads/main
+deploy	Checkout repository	2026-11-09T01:07:54.9461015Z [command]/usr/bin/git checkout --detach
+deploy	Checkout repository	2026-11-09T01:07:54.9626229Z HEAD is now at 72bb750 fix(ci): prevent artifact quota from failing deployment
+deploy	Checkout repository	2026-11-09T01:07:54.9821895Z [command]/usr/bin/git branch --delete --force main
+deploy	Checkout repository	2026-11-09T01:07:54.9927052Z Deleted branch main (was 72bb750).
+deploy	Checkout repository	2026-11-09T01:07:55.0099669Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:55.0102703Z [command]/usr/bin/git submodule status
+deploy	Checkout repository	2026-11-09T01:07:55.0805333Z ##[group]Cleaning the repository
+deploy	Checkout repository	2026-11-09T01:07:55.0807906Z [command]/usr/bin/git clean -ffdx
+deploy	Checkout repository	2026-11-09T01:07:55.1030304Z Removing bin/
+deploy	Checkout repository	2026-11-09T01:07:55.1050120Z Removing obj/
+deploy	Checkout repository	2026-11-09T01:07:55.1112310Z [command]/usr/bin/git reset --hard HEAD
+deploy	Checkout repository	2026-11-09T01:07:55.1227461Z HEAD is now at 72bb750 fix(ci): prevent artifact quota from failing deployment
+deploy	Checkout repository	2026-11-09T01:07:55.1308761Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:55.1332270Z ##[group]Disabling automatic garbage collection
+deploy	Checkout repository	2026-11-09T01:07:55.1342538Z [command]/usr/bin/git config --local gc.auto 0
+deploy	Checkout repository	2026-11-09T01:07:55.1389248Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:55.1429749Z ##[group]Setting up auth
+deploy	Checkout repository	2026-11-09T01:07:55.1435256Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Checkout repository	2026-11-09T01:07:55.1456010Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Checkout repository	2026-11-09T01:07:55.2171878Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Checkout repository	2026-11-09T01:07:55.2260813Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Checkout repository	2026-11-09T01:07:55.3250077Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+deploy	Checkout repository	2026-11-09T01:07:55.3629203Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+deploy	Checkout repository	2026-11-09T01:07:55.4398190Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+deploy	Checkout repository	2026-11-09T01:07:55.4520242Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:55.4527124Z ##[group]Fetching the repository
+deploy	Checkout repository	2026-11-09T01:07:55.4540922Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +72bb75007fc2f6770c388627f9ca54b93574caf1:refs/remotes/origin/main
+deploy	Checkout repository	2026-11-09T01:07:56.3014425Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:56.3015941Z ##[group]Determining the checkout info
+deploy	Checkout repository	2026-11-09T01:07:56.3017459Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:56.3018641Z [command]/usr/bin/git sparse-checkout disable
+deploy	Checkout repository	2026-11-09T01:07:56.3235862Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+deploy	Checkout repository	2026-11-09T01:07:56.3240988Z ##[group]Checking out the ref
+deploy	Checkout repository	2026-11-09T01:07:56.3242553Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+deploy	Checkout repository	2026-11-09T01:07:56.3297207Z Switched to a new branch 'main'
+deploy	Checkout repository	2026-11-09T01:07:56.3305155Z branch 'main' set up to track 'origin/main'.
+deploy	Checkout repository	2026-11-09T01:07:56.3319889Z ##[endgroup]
+deploy	Checkout repository	2026-11-09T01:07:56.3428957Z [command]/usr/bin/git log -1 --format=%H
+deploy	Checkout repository	2026-11-09T01:07:56.3463197Z 72bb75007fc2f6770c388627f9ca54b93574caf1
+deploy	Checkout repository	2026-11-09T01:07:56.3501018Z ##[group]Removing auth
+deploy	Checkout repository	2026-11-09T01:07:56.3528707Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Checkout repository	2026-11-09T01:07:56.3609796Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Checkout repository	2026-11-09T01:07:56.4376059Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Checkout repository	2026-11-09T01:07:56.4406104Z http.https://github.com/.extraheader
+deploy	Checkout repository	2026-11-09T01:07:56.4409110Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+deploy	Checkout repository	2026-11-09T01:07:56.4490279Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Checkout repository	2026-11-09T01:07:56.4946510Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+deploy	Checkout repository	2026-11-09T01:07:56.5003711Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+deploy	Checkout repository	2026-11-09T01:07:56.5471880Z ##[endgroup]
+deploy	Validate image tag	﻿2026-11-09T01:07:56.6130955Z ##[group]Run [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]
+deploy	Validate image tag	2026-11-09T01:07:56.6132340Z [36;1m[[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]][0m
+deploy	Validate image tag	2026-11-09T01:07:56.6170710Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+deploy	Validate image tag	2026-11-09T01:07:56.6171938Z env:
+deploy	Validate image tag	2026-11-09T01:07:56.6172686Z   IMAGE_TAG: 597d0348d7175685a920f7d3d5268a59f78f0491
+deploy	Validate image tag	2026-11-09T01:07:56.6173719Z ##[endgroup]
+deploy	Verify cluster	﻿2026-11-09T01:07:56.6653391Z ##[group]Run set -euo pipefail
+deploy	Verify cluster	2026-11-09T01:07:56.6655086Z [36;1mset -euo pipefail[0m
+deploy	Verify cluster	2026-11-09T01:07:56.6656303Z [36;1mtest "$(kubectl config current-context)" = "talentai"[0m
+deploy	Verify cluster	2026-11-09T01:07:56.6657395Z [36;1mminikube status -p talentai[0m
+deploy	Verify cluster	2026-11-09T01:07:56.6658265Z [36;1mkubectl get namespace talentai[0m
+deploy	Verify cluster	2026-11-09T01:07:56.6697182Z shell: /usr/bin/bash -e {0}
+deploy	Verify cluster	2026-11-09T01:07:56.6697900Z ##[endgroup]
+deploy	Verify cluster	2026-11-09T01:07:57.5630202Z talentai
+deploy	Verify cluster	2026-11-09T01:07:57.5631522Z type: Control Plane
+deploy	Verify cluster	2026-11-09T01:07:57.5632628Z host: Running
+deploy	Verify cluster	2026-11-09T01:07:57.5633540Z kubelet: Running
+deploy	Verify cluster	2026-11-09T01:07:57.5634861Z apiserver: Running
+deploy	Verify cluster	2026-11-09T01:07:57.5635730Z kubeconfig: Configured
+deploy	Verify cluster	2026-11-09T01:07:57.5636422Z 
+deploy	Verify cluster	2026-11-09T01:07:57.6894062Z NAME       STATUS   AGE
+deploy	Verify cluster	2026-11-09T01:07:57.6895131Z talentai   Active   7h38m
+deploy	Load published image into Minikube	﻿2026-11-09T01:07:57.7031548Z ##[group]Run set -euo pipefail
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7032461Z [36;1mset -euo pipefail[0m
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7033263Z [36;1mIMAGE="fedimriri/talentai:$IMAGE_TAG"[0m
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7034383Z [36;1mdocker pull "$IMAGE"[0m
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7035237Z [36;1mminikube -p talentai image load "$IMAGE"[0m
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7060537Z shell: /usr/bin/bash -e {0}
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7061612Z env:
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7062284Z   IMAGE_TAG: 597d0348d7175685a920f7d3d5268a59f78f0491
+deploy	Load published image into Minikube	2026-11-09T01:07:57.7063407Z ##[endgroup]
+deploy	Load published image into Minikube	2026-11-09T01:07:59.0492513Z 597d0348d7175685a920f7d3d5268a59f78f0491: Pulling from fedimriri/talentai
+deploy	Load published image into Minikube	2026-11-09T01:07:59.3368742Z Digest: sha256:34ce2d3ca0ac5b4e8292915b804e705df7dd3ec30b2670ba7abd9c494e6c6be2
+deploy	Load published image into Minikube	2026-11-09T01:07:59.3381961Z Status: Image is up to date for fedimriri/talentai:597d0348d7175685a920f7d3d5268a59f78f0491
+deploy	Load published image into Minikube	2026-11-09T01:07:59.3399921Z docker.io/fedimriri/talentai:597d0348d7175685a920f7d3d5268a59f78f0491
+deploy	Deploy published image	﻿2026-11-09T01:08:08.4417273Z ##[group]Run bash scripts/deploy-local.sh "$IMAGE_TAG"
+deploy	Deploy published image	2026-11-09T01:08:08.4418138Z [36;1mbash scripts/deploy-local.sh "$IMAGE_TAG"[0m
+deploy	Deploy published image	2026-11-09T01:08:08.4442973Z shell: /usr/bin/bash -e {0}
+deploy	Deploy published image	2026-11-09T01:08:08.4443507Z env:
+deploy	Deploy published image	2026-11-09T01:08:08.4444560Z   IMAGE_TAG: 597d0348d7175685a920f7d3d5268a59f78f0491
+deploy	Deploy published image	2026-11-09T01:08:08.4446149Z ##[endgroup]
+deploy	Deploy published image	2026-11-09T01:08:09.1205675Z Release "talentai" has been upgraded. Happy Helming!
+deploy	Deploy published image	2026-11-09T01:08:09.1235342Z NAME: talentai
+deploy	Deploy published image	2026-11-09T01:08:09.1236616Z LAST DEPLOYED: Mon Nov  9 02:08:08 2026
+deploy	Deploy published image	2026-11-09T01:08:09.1237817Z NAMESPACE: talentai
+deploy	Deploy published image	2026-11-09T01:08:09.1238782Z STATUS: deployed
+deploy	Deploy published image	2026-11-09T01:08:09.1239677Z REVISION: 11
+deploy	Deploy published image	2026-11-09T01:08:09.1240741Z TEST SUITE: None
+deploy	Deploy published image	2026-11-09T01:08:09.2124487Z deployment "talentai" successfully rolled out
+deploy	Deploy published image	2026-11-09T01:08:09.3022410Z NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deploy	Deploy published image	2026-11-09T01:08:09.3025122Z deployment.apps/talentai   1/1     1            1           7h38m
+deploy	Deploy published image	2026-11-09T01:08:09.3035892Z 
+deploy	Deploy published image	2026-11-09T01:08:09.3037876Z NAME                            READY   STATUS    RESTARTS   AGE
+deploy	Deploy published image	2026-11-09T01:08:09.3041145Z pod/talentai-7b7c45bd44-xgp5f   1/1     Running   0          21m
+deploy	Deploy published image	2026-11-09T01:08:09.3043311Z 
+deploy	Deploy published image	2026-11-09T01:08:09.3045818Z NAME                                           REFERENCE             TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+deploy	Deploy published image	2026-11-09T01:08:09.3054790Z horizontalpodautoscaler.autoscaling/talentai   Deployment/talentai   cpu: 4%/70%   1         3         1          6h43m
+deploy	Deploy published image	2026-11-09T01:08:09.3100362Z Deployment complete: fedimriri/talentai:597d0348d7175685a920f7d3d5268a59f78f0491
+deploy	Verify application	﻿2026-11-09T01:08:09.3192567Z ##[group]Run set -euo pipefail
+deploy	Verify application	2026-11-09T01:08:09.3193474Z [36;1mset -euo pipefail[0m
+deploy	Verify application	2026-11-09T01:08:09.3195307Z [36;1mmkdir -p cd-evidence[0m
+deploy	Verify application	2026-11-09T01:08:09.3196567Z [36;1mkubectl get deployments,pods,service,ingress,hpa -n talentai -o wide | tee cd-evidence/resources.txt[0m
+deploy	Verify application	2026-11-09T01:08:09.3198650Z [36;1mkubectl rollout status deployment/talentai \[0m
+deploy	Verify application	2026-11-09T01:08:09.3199672Z [36;1m  -n talentai --timeout=180s | tee cd-evidence/rollout.txt[0m
+deploy	Verify application	2026-11-09T01:08:09.3200871Z [36;1mhelm status talentai -n talentai | tee cd-evidence/helm-status.txt[0m
+deploy	Verify application	2026-11-09T01:08:09.3201932Z [36;1mINGRESS_IP="$(minikube ip -p talentai)"[0m
+deploy	Verify application	2026-11-09T01:08:09.3202858Z [36;1mfor path in / /health/live /health/ready; do[0m
+deploy	Verify application	2026-11-09T01:08:09.3204074Z [36;1m  code="$(curl --noproxy '*' --resolve "talentai.local:80:$INGRESS_IP" \[0m
+deploy	Verify application	2026-11-09T01:08:09.3206577Z [36;1m    --silent --show-error --output /dev/null --write-out '%{http_code}' \[0m
+deploy	Verify application	2026-11-09T01:08:09.3207729Z [36;1m    "http://talentai.local$path")"[0m
+deploy	Verify application	2026-11-09T01:08:09.3208859Z [36;1m  printf '%s HTTP %s\n' "$path" "$code" | tee -a cd-evidence/health.txt[0m
+deploy	Verify application	2026-11-09T01:08:09.3209758Z [36;1m  test "$code" = 200[0m
+deploy	Verify application	2026-11-09T01:08:09.3210325Z [36;1mdone[0m
+deploy	Verify application	2026-11-09T01:08:09.3234770Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+deploy	Verify application	2026-11-09T01:08:09.3235678Z ##[endgroup]
+deploy	Verify application	2026-11-09T01:08:09.4791306Z NAME                       READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                                                        SELECTOR
+deploy	Verify application	2026-11-09T01:08:09.4795185Z deployment.apps/talentai   1/1     1            1           7h38m   talentai     fedimriri/talentai:597d0348d7175685a920f7d3d5268a59f78f0491   app=talentai
+deploy	Verify application	2026-11-09T01:08:09.4797262Z 
+deploy	Verify application	2026-11-09T01:08:09.4798551Z NAME                            READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+deploy	Verify application	2026-11-09T01:08:09.4801154Z pod/talentai-7b7c45bd44-xgp5f   1/1     Running   0          21m   10.244.0.16   talentai   <none>           <none>
+deploy	Verify application	2026-11-09T01:08:09.4802963Z 
+deploy	Verify application	2026-11-09T01:08:09.4806022Z NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE     SELECTOR
+deploy	Verify application	2026-11-09T01:08:09.4808341Z service/talentai   ClusterIP   10.105.41.156   <none>        80/TCP    7h38m   app=talentai
+deploy	Verify application	2026-11-09T01:08:09.4809660Z 
+deploy	Verify application	2026-11-09T01:08:09.4810335Z NAME                                 CLASS   HOSTS            ADDRESS        PORTS   AGE
+deploy	Verify application	2026-11-09T01:08:09.4812020Z ingress.networking.k8s.io/talentai   nginx   talentai.local   192.168.49.2   80      7h38m
+deploy	Verify application	2026-11-09T01:08:09.4814926Z 
+deploy	Verify application	2026-11-09T01:08:09.4815601Z NAME                                           REFERENCE             TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+deploy	Verify application	2026-11-09T01:08:09.4817594Z horizontalpodautoscaler.autoscaling/talentai   Deployment/talentai   cpu: 4%/70%   1         3         1          6h43m
+deploy	Verify application	2026-11-09T01:08:09.6196035Z deployment "talentai" successfully rolled out
+deploy	Verify application	2026-11-09T01:08:09.7123339Z NAME: talentai
+deploy	Verify application	2026-11-09T01:08:09.7125374Z LAST DEPLOYED: Mon Nov  9 02:08:08 2026
+deploy	Verify application	2026-11-09T01:08:09.7127325Z NAMESPACE: talentai
+deploy	Verify application	2026-11-09T01:08:09.7128792Z STATUS: deployed
+deploy	Verify application	2026-11-09T01:08:09.7130238Z REVISION: 11
+deploy	Verify application	2026-11-09T01:08:09.7131588Z TEST SUITE: None
+deploy	Verify application	2026-11-09T01:08:09.9582406Z / HTTP 200
+deploy	Verify application	2026-11-09T01:08:09.9771595Z /health/live HTTP 200
+deploy	Verify application	2026-11-09T01:08:10.0745273Z /health/ready HTTP 200
+deploy	Save deployment evidence	﻿2026-11-09T01:08:10.1000326Z ##[group]Run actions/upload-artifact@v4
+deploy	Save deployment evidence	2026-11-09T01:08:10.1001297Z with:
+deploy	Save deployment evidence	2026-11-09T01:08:10.1002077Z   name: talentai-deployment-597d0348d7175685a920f7d3d5268a59f78f0491
+deploy	Save deployment evidence	2026-11-09T01:08:10.1003354Z   path: cd-evidence/
+deploy	Save deployment evidence	2026-11-09T01:08:10.1004104Z   if-no-files-found: warn
+deploy	Save deployment evidence	2026-11-09T01:08:10.1004607Z   compression-level: 6
+deploy	Save deployment evidence	2026-11-09T01:08:10.1005177Z   overwrite: false
+deploy	Save deployment evidence	2026-11-09T01:08:10.1005488Z   include-hidden-files: false
+deploy	Save deployment evidence	2026-11-09T01:08:10.1005830Z ##[endgroup]
+deploy	Save deployment evidence	2026-11-09T01:08:10.4625729Z (node:115227) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+deploy	Save deployment evidence	2026-11-09T01:08:10.4640202Z (Use `node --trace-deprecation ...` to show where the warning was created)
+deploy	Save deployment evidence	2026-11-09T01:08:10.4877065Z With the provided path, there will be 4 files uploaded
+deploy	Save deployment evidence	2026-11-09T01:08:10.4889836Z Artifact name is valid!
+deploy	Save deployment evidence	2026-11-09T01:08:10.4890902Z Root directory input is valid!
+deploy	Save deployment evidence	2026-11-09T01:08:11.0712147Z ##[error]Failed to CreateArtifact: Artifact storage quota has been hit. Unable to upload any new artifacts. Usage is recalculated every 6-12 hours.
+deploy	Save deployment evidence	More info on storage limits: https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions#calculating-minute-and-storage-spending
+deploy	Post Checkout repository	﻿2026-11-09T01:08:11.1331090Z Post job cleanup.
+deploy	Post Checkout repository	2026-11-09T01:08:11.3564917Z [command]/usr/bin/git version
+deploy	Post Checkout repository	2026-11-09T01:08:11.3668274Z git version 2.53.0
+deploy	Post Checkout repository	2026-11-09T01:08:11.3756552Z Copying '/home/fadi/.gitconfig' to '/home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner/_work/_temp/18d7a022-c034-440d-a9ef-4b6e74fc9498/.gitconfig'
+deploy	Post Checkout repository	2026-11-09T01:08:11.3798491Z Temporarily overriding HOME='/home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner/_work/_temp/18d7a022-c034-440d-a9ef-4b6e74fc9498' before making global git config changes
+deploy	Post Checkout repository	2026-11-09T01:08:11.3845793Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Post Checkout repository	2026-11-09T01:08:11.3849850Z [command]/usr/bin/git config --global --add safe.directory /home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner/_work/TalentAI/TalentAI
+deploy	Post Checkout repository	2026-11-09T01:08:11.3897540Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Post Checkout repository	2026-11-09T01:08:11.3977500Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Post Checkout repository	2026-11-09T01:08:11.4443971Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Post Checkout repository	2026-11-09T01:08:11.4511734Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Post Checkout repository	2026-11-09T01:08:11.5085649Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+deploy	Post Checkout repository	2026-11-09T01:08:11.5156308Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+deploy	Complete job	﻿2026-11-09T01:08:11.6026343Z Cleaning up orphan processes
+deploy	Complete job	2026-11-09T01:08:11.8829974Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

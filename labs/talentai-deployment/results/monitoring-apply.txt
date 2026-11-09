@@ -1,0 +1,12 @@
+namespace/monitoring configured
+serviceaccount/prometheus created
+clusterrole.rbac.authorization.k8s.io/talentai-prometheus-read created
+clusterrolebinding.rbac.authorization.k8s.io/talentai-prometheus-read created
+configmap/prometheus-config created
+deployment.apps/prometheus created
+service/prometheus created
+deployment.apps/blackbox-exporter created
+service/blackbox-exporter created
+configmap/grafana-provisioning created
+deployment.apps/grafana created
+service/grafana created

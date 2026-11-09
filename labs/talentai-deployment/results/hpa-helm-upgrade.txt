@@ -1,0 +1,7 @@
+Release "talentai" has been upgraded. Happy Helming!
+NAME: talentai
+LAST DEPLOYED: Sun Nov  8 19:19:49 2026
+NAMESPACE: talentai
+STATUS: deployed
+REVISION: 3
+TEST SUITE: None

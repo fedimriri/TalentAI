@@ -1,0 +1,32 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # kubernetes_namespace_v1.talentai will be created
+  + resource "kubernetes_namespace_v1" "talentai" {
+      + id                               = (known after apply)
+      + wait_for_default_service_account = false
+
+      + metadata {
+          + generation       = (known after apply)
+          + labels           = {
+              + "app"        = "talentai"
+              + "managed-by" = "terraform"
+            }
+          + name             = "talentai"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────
+
+Saved the plan to: talentai.tfplan
+
+To perform exactly these actions, run the following command to apply:
+    terraform apply "talentai.tfplan"

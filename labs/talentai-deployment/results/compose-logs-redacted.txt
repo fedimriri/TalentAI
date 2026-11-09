@@ -1,0 +1,18 @@
+talentai-1  | info: TalentAI.Data.MongoDbContext[0]
+talentai-1  |       Initializing MongoDB client for configured database.
+talentai-1  | info: TalentAI.Data.MongoDbContext[0]
+talentai-1  |       MongoDB client initialized successfully.
+talentai-1  | info: Program[0]
+talentai-1  |       MongoDB connection verified.
+talentai-1  | warn: Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository[60]
+talentai-1  |       Storing keys in a directory '/root/.aspnet/DataProtection-Keys' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+talentai-1  | warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
+talentai-1  |       No XML encryptor configured. Key {60f7a336-7967-447b-9097-bfe0fd58ad69} may be persisted to storage in unencrypted form.
+talentai-1  | info: Microsoft.Hosting.Lifetime[14]
+talentai-1  |       Now listening on: http://0.0.0.0:5000
+talentai-1  | info: Microsoft.Hosting.Lifetime[0]
+talentai-1  |       Application started. Press Ctrl+C to shut down.
+talentai-1  | info: Microsoft.Hosting.Lifetime[0]
+talentai-1  |       Hosting environment: Production
+talentai-1  | info: Microsoft.Hosting.Lifetime[0]
+talentai-1  |       Content root path: /app

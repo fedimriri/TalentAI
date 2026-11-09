@@ -1,0 +1,47 @@
+=== TALENTAI APPLICATION LOGS ===
+2026-11-09T00:46:53.046749503Z info: TalentAI.Data.MongoDbContext[0]
+2026-11-09T00:46:53.046859048Z       Initializing MongoDB client for configured database.
+2026-11-09T00:46:53.915079069Z info: TalentAI.Data.MongoDbContext[0]
+2026-11-09T00:46:53.915106099Z       MongoDB client initialized successfully.
+2026-11-09T00:46:56.689351301Z info: Program[0]
+2026-11-09T00:46:56.689375666Z       MongoDB connection verified.
+2026-11-09T00:46:57.041609348Z warn: Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository[60]
+2026-11-09T00:46:57.041628445Z       Storing keys in a directory '/home/app/.aspnet/DataProtection-Keys' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+2026-11-09T00:46:57.074570440Z warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
+2026-11-09T00:46:57.074617025Z       No XML encryptor configured. Key {e177adca-ec90-48e8-a5ea-5d492e836aa3} may be persisted to storage in unencrypted form.
+2026-11-09T00:46:57.351346672Z info: Microsoft.Hosting.Lifetime[14]
+2026-11-09T00:46:57.351442488Z       Now listening on: http://0.0.0.0:5000
+2026-11-09T00:46:57.351471229Z info: Microsoft.Hosting.Lifetime[0]
+2026-11-09T00:46:57.351477010Z       Application started. Press Ctrl+C to shut down.
+2026-11-09T00:46:57.351876670Z info: Microsoft.Hosting.Lifetime[0]
+2026-11-09T00:46:57.351884550Z       Hosting environment: Production
+2026-11-09T00:46:57.351887713Z info: Microsoft.Hosting.Lifetime[0]
+2026-11-09T00:46:57.351891265Z       Content root path: /app
+2026-11-09T01:08:45.850453100Z warn: Microsoft.AspNetCore.Session.SessionMiddleware[7]
+2026-11-09T01:08:45.850487356Z       Error unprotecting the session cookie.
+2026-11-09T01:08:45.850494124Z       System.Security.Cryptography.CryptographicException: The key {fb6921ae-a601-4b0c-b400-7bc9365dead1} was not found in the key ring. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+2026-11-09T01:08:45.850499413Z          at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)
+2026-11-09T01:08:45.850504120Z          at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)
+2026-11-09T01:08:45.850508654Z          at Microsoft.AspNetCore.Session.CookieProtection.Unprotect(IDataProtector protector, String protectedText, ILogger logger)
+=== PROMETHEUS BLACKBOX PROBE ===
+target= http://talentai.talentai.svc.cluster.local/health/ready probe_success= 1
+=== LOGGING COMPONENTS ===
+=== CURRENT CLUSTER RESOURCE USAGE ===
+NAME       CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+talentai   344m         8%       1265Mi          8%          
+NAMESPACE       NAME                                       CPU(cores)   MEMORY(bytes)   
+ingress-nginx   ingress-nginx-controller-d7cd8c989-kwv22   3m           75Mi            
+kube-system     coredns-559f6c778d-7wxcs                   3m           14Mi            
+kube-system     coredns-559f6c778d-m4bhp                   4m           40Mi            
+kube-system     etcd-talentai                              40m          52Mi            
+kube-system     kindnet-9tfdx                              1m           10Mi            
+kube-system     kube-apiserver-talentai                    75m          264Mi           
+kube-system     kube-controller-manager-talentai           28m          69Mi            
+kube-system     kube-proxy-qnckb                           1m           21Mi            
+kube-system     kube-scheduler-talentai                    17m          36Mi            
+kube-system     metrics-server-768f9f6999-grpwb            6m           34Mi            
+kube-system     storage-provisioner                        3m           11Mi            
+monitoring      blackbox-exporter-8858675c6-mfhvl          1m           16Mi            
+monitoring      grafana-59f79b9c7c-2gvkq                   10m          128Mi           
+monitoring      prometheus-657668b6c5-zvbt6                4m           77Mi            
+talentai        talentai-7b7c45bd44-xgp5f                  3m           93Mi            

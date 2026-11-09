@@ -1,0 +1,12 @@
+Sun Nov  8 07:54:22 PM CET 2026
+===== INGRESS =====
+NAMESPACE    NAME         CLASS   HOSTS              ADDRESS        PORTS   AGE
+monitoring   grafana      nginx   grafana.local      192.168.49.2   80      14m
+monitoring   prometheus   nginx   prometheus.local   192.168.49.2   80      14m
+talentai     talentai     nginx   talentai.local     192.168.49.2   80      84m
+===== HTTP VERIFICATION =====
+http://talentai.local/ HTTP 200
+http://talentai.local/health/live HTTP 200
+http://talentai.local/health/ready HTTP 200
+http://grafana.local/login HTTP 200
+http://prometheus.local/-/healthy HTTP 200

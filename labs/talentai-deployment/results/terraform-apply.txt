@@ -1,0 +1,4 @@
+kubernetes_namespace_v1.talentai: Creating...
+kubernetes_namespace_v1.talentai: Creation complete after 0s [id=talentai]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.

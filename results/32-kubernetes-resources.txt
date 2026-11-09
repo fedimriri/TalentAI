@@ -1,0 +1,14 @@
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/talentai   1/1     1            1           5h48m
+
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/talentai-7c56cc4879-pnmhr   1/1     Running   0          53s
+
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/talentai   ClusterIP   10.105.41.156   <none>        80/TCP    5h48m
+
+NAME                                 CLASS   HOSTS            ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/talentai   nginx   talentai.local   192.168.49.2   80      5h48m
+
+NAME                                           REFERENCE             TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/talentai   Deployment/talentai   cpu: <unknown>/70%   1         3         1          4h54m

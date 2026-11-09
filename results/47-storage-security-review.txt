@@ -1,0 +1,120 @@
+=== DOCKERFILE ===
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --only-upgrade \
+       apt libapt-pkg6.0t64 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://+:5000
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["TalentAI.csproj", "./"]
+RUN dotnet restore "TalentAI.csproj"
+COPY . .
+RUN dotnet build "TalentAI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "TalentAI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+COPY --from=build /src/appsettings.container.json ./appsettings.json
+RUN mkdir -p /app/wwwroot/uploads && chown "$APP_UID:$APP_UID" /app/wwwroot/uploads
+USER $APP_UID
+ENTRYPOINT ["dotnet", "TalentAI.dll"]
+=== HELM DEPLOYMENT ===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels: {app: {{ .Release.Name }}}
+  template:
+    metadata:
+      labels: {app: {{ .Release.Name }}}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: talentai
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 5000
+          envFrom:
+            - configMapRef: {name: {{ .Release.Name }}-config}
+            - secretRef: {name: {{ .Values.secretName }}}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          startupProbe:
+            httpGet: {path: /health/live, port: http}
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 18
+          readinessProbe:
+            httpGet: {path: /health/ready, port: http}
+            timeoutSeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet: {path: /health/live, port: http}
+            timeoutSeconds: 5
+            periodSeconds: 20
+=== HELM VALUES ===
+replicaCount: 1
+image:
+  repository: talentai
+  tag: local
+  pullPolicy: IfNotPresent
+secretName: talentai-runtime
+imagePullSecrets: []
+service:
+  port: 80
+ingress:
+  enabled: true
+  className: nginx
+  host: talentai.local
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  cpuUtilization: 70
+=== APPLICATION STORAGE REFERENCES ===
+./Controllers/CandidateController.cs:135:        // Save File to wwwroot/uploads physically
+./Controllers/CandidateController.cs:137:        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+./Controllers/CandidateController.cs:142:        using (var stream = new FileStream(filePath, FileMode.Create))
+./Controllers/CandidateController.cs:215:    public async Task<IActionResult> EditApplication(string id, IFormFile ResumeFile)
+./Controllers/CandidateController.cs:249:        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+./Controllers/CandidateController.cs:254:        using (var stream = new FileStream(filePath, FileMode.Create))
+./Controllers/CandidateController.cs:297:    public async Task<IActionResult> AtsScorePost(IFormFile ResumeFile)
+./Controllers/CandidateController.cs:324:            using (var stream = new FileStream(tempPath, FileMode.Create))
+./DTOs/ApplyJobDto.cs:11:    public IFormFile ResumeFile { get; set; } = null!;
+./Program.cs:76:builder.Services.AddSession(options =>
+./Program.cs:125:app.UseSession();

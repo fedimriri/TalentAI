@@ -1,0 +1,10 @@
+NAMESPACE     NAME                               READY   STATUS    RESTARTS   AGE
+kube-system   coredns-559f6c778d-7wxcs           1/1     Running   0          4m40s
+kube-system   coredns-559f6c778d-m4bhp           1/1     Running   0          4m40s
+kube-system   etcd-talentai                      1/1     Running   0          4m47s
+kube-system   kindnet-9tfdx                      1/1     Running   0          4m40s
+kube-system   kube-apiserver-talentai            1/1     Running   0          4m45s
+kube-system   kube-controller-manager-talentai   1/1     Running   0          4m45s
+kube-system   kube-proxy-qnckb                   1/1     Running   0          4m40s
+kube-system   kube-scheduler-talentai            1/1     Running   0          4m45s
+kube-system   storage-provisioner                1/1     Running   0          4m44s

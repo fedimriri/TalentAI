@@ -1,0 +1,61 @@
+=== TERRAFORM FILES ===
+infrastructure/terraform/.terraform.lock.hcl
+infrastructure/terraform/main.tf
+=== TERRAFORM MAIN ===
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "kubernetes" {
+  config_path    = pathexpand("~/.kube/config")
+  config_context = "talentai"
+}
+
+resource "kubernetes_namespace_v1" "talentai" {
+  metadata {
+    name = "talentai"
+    labels = {
+      app        = "talentai"
+      managed-by = "terraform"
+    }
+  }
+}
+=== ANSIBLE FILES ===
+infrastructure/ansible/prepare.yml
+=== ANSIBLE PLAYBOOK ===
+---
+- name: Validate local TalentAI deployment tools
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  tasks:
+    - name: Check required tools
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - docker --version
+        - kubectl version --client
+        - minikube version
+        - helm version --short
+        - terraform version
+      changed_when: false
+    - name: Check Docker daemon
+      ansible.builtin.command: docker info --format '{{"{{"}}.ServerVersion{{"}}"}}'
+      changed_when: false
+    - name: Report available memory
+      ansible.builtin.debug:
+        msg: "Available memory {{ ansible_facts.memfree_mb }} MiB"
+=== TOOL VERSIONS ===
+Terraform v1.17.1
+on linux_amd64
+
+ansible [core 2.20.1]
+  config file = None
+  configured module search path = ['/home/fadi/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/lib/python3/dist-packages/ansible

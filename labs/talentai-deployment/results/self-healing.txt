@@ -1,0 +1,9 @@
+old_pod=talentai-86cd77b659-szppb
+pod "talentai-86cd77b659-szppb" deleted from talentai namespace
+Waiting for deployment "talentai" rollout to finish: 0 of 1 updated replicas are available...
+Waiting for deployment "talentai" rollout to finish: 0 of 1 updated replicas are available...
+deployment "talentai" successfully rolled out
+NAME                        READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+talentai-86cd77b659-w7pps   1/1     Running   0          12s   10.244.0.12   talentai   <none>           <none>
+NAME       REFERENCE             TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+talentai   Deployment/talentai   cpu: <unknown>/70%   1         1         1          2m35s

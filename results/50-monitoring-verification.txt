@@ -1,0 +1,24 @@
+=== MONITORING PODS ===
+NAME                                READY   STATUS    RESTARTS        AGE    IP           NODE       NOMINATED NODE   READINESS GATES
+blackbox-exporter-8858675c6-mfhvl   1/1     Running   1 (3h20m ago)   7h5m   10.244.0.3   talentai   <none>           <none>
+grafana-59f79b9c7c-2gvkq            1/1     Running   1 (3h20m ago)   7h3m   10.244.0.4   talentai   <none>           <none>
+prometheus-657668b6c5-zvbt6         1/1     Running   1 (3h20m ago)   7h5m   10.244.0.7   talentai   <none>           <none>
+=== PROMETHEUS TARGETS ===
+job= kubernetes-cadvisor health= up endpoint= https://kubernetes.default.svc:443/api/v1/nodes/talentai/proxy/metrics/cadvisor error= 
+job= prometheus health= up endpoint= http://localhost:9090/metrics error= 
+job= talentai-availability health= up endpoint= http://blackbox-exporter.monitoring.svc.cluster.local:9115/probe?module=http_2xx&target=http%3A%2F%2Ftalentai.talentai.svc.cluster.local%2Fhealth%2Fready error= 
+=== PROMETHEUS METRIC QUERY ===
+talentai-availability 1
+kubernetes-cadvisor 1
+prometheus 1
+=== GRAFANA STATUS ===
+{
+  "database": "ok",
+  "version": "12.0.0",
+  "commit": "4c0e7045f97f356716755b47183b22e7f12bb4bf"
+}
+=== KUBERNETES METRICS ===
+NAME       CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+talentai   336m         8%       1234Mi          8%          
+NAME                        CPU(cores)   MEMORY(bytes)   
+talentai-7b7c45bd44-xgp5f   3m           93Mi            

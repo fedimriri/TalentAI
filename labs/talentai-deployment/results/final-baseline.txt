@@ -1,0 +1,25 @@
+Sun Nov  8 07:19:15 PM CET 2026
+===== MINIKUBE =====
+talentai
+type: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+
+===== KUBERNETES =====
+NAME       STATUS   ROLES           AGE   VERSION
+talentai   Ready    control-plane   63m   v1.37.0
+NAME                        READY   STATUS    RESTARTS   AGE
+talentai-86cd77b659-szppb   1/1     Running   0          105s
+NAME                                       READY   STATUS      RESTARTS       AGE
+ingress-nginx-admission-create-6mqr7       0/1     Completed   0              48m
+ingress-nginx-admission-patch-49dgj        0/1     Completed   0              48m
+ingress-nginx-controller-d7cd8c989-kwv22   1/1     Running     1 (7m7s ago)   48m
+===== HELM =====
+NAME    	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART         	APP VERSION
+talentai	talentai 	2       	2026-11-08 19:17:31.212457483 +0100 CET	deployed	talentai-0.1.0	1.0        
+===== DOCKER =====
+CONTAINER ID   IMAGE                                 COMMAND                  CREATED             STATUS          PORTS                                                                                                                                  NAMES
+e19840bb4407   talentai:local                        "dotnet TalentAI.dll"    49 minutes ago      Up 17 minutes   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp                                                                                            talentai-talentai-1
+ad2a255cdf8d   gcr.io/k8s-minikube/kicbase:v0.0.51   "/usr/local/bin/entr…"   About an hour ago   Up 7 minutes    127.0.0.1:32768->22/tcp, 127.0.0.1:32769->2376/tcp, 127.0.0.1:32770->5000/tcp, 127.0.0.1:32771->8443/tcp, 127.0.0.1:32772->32443/tcp   talentai

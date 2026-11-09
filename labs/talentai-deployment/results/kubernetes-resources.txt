@@ -1,0 +1,11 @@
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES           SELECTOR
+deployment.apps/talentai   1/1     1            1           20s   talentai     talentai:local   app=talentai
+
+NAME                            READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+pod/talentai-67c557846d-mw7st   1/1     Running   0          20s   10.244.0.4   talentai   <none>           <none>
+
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/talentai   ClusterIP   10.105.41.156   <none>        80/TCP    20s   app=talentai
+
+NAME                                 CLASS   HOSTS            ADDRESS   PORTS   AGE
+ingress.networking.k8s.io/talentai   nginx   talentai.local             80      20s

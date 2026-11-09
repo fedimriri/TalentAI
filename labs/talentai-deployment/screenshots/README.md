@@ -1,0 +1,3 @@
+# Manual screenshot instructions
+
+Capture genuine desktop screenshots after each verified step, with the command and output visible, and redact all URI credentials, API keys, tokens, and private email addresses before saving. Suggested names: `01-docker-build.png`, `02-atlas-compose-health.png`, `03-minikube-status.png`, `04-terraform-apply.png`, `05-helm-rollout.png`, `06-http-and-atlas-readiness.png`, `07-application-logs.png`. Do not capture a shell displaying `.env`, `kubectl get secret -o yaml`, or `docker inspect` environment values. Record the matching command and timestamp in `../results/`.

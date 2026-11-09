@@ -1,0 +1,17 @@
+Sun Nov  8 07:15:03 PM CET 2026
+NAMESPACE       NAME                                       READY   STATUS      RESTARTS        AGE
+ingress-nginx   ingress-nginx-admission-create-6mqr7       0/1     Completed   0               44m
+ingress-nginx   ingress-nginx-admission-patch-49dgj        0/1     Completed   0               44m
+ingress-nginx   ingress-nginx-controller-d7cd8c989-kwv22   1/1     Running     1 (2m54s ago)   44m
+kube-system     coredns-559f6c778d-7wxcs                   1/1     Running     1 (2m54s ago)   58m
+kube-system     coredns-559f6c778d-m4bhp                   1/1     Running     1 (2m54s ago)   58m
+kube-system     etcd-talentai                              1/1     Running     1 (2m54s ago)   59m
+kube-system     kindnet-9tfdx                              1/1     Running     1 (2m54s ago)   58m
+kube-system     kube-apiserver-talentai                    1/1     Running     1 (2m54s ago)   59m
+kube-system     kube-controller-manager-talentai           1/1     Running     1 (2m54s ago)   59m
+kube-system     kube-proxy-qnckb                           1/1     Running     1 (2m54s ago)   58m
+kube-system     kube-scheduler-talentai                    1/1     Running     1 (2m54s ago)   59m
+kube-system     storage-provisioner                        1/1     Running     2 (2m17s ago)   59m
+talentai        talentai-67c557846d-mw7st                  1/1     Running     2 (2m30s ago)   44m
+deployment "talentai" successfully rolled out
+deployment "ingress-nginx-controller" successfully rolled out

@@ -1,0 +1,61 @@
+=== KUBERNETES CONTEXT ===
+talentai
+=== MINIKUBE STATUS ===
+talentai
+type: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+
+=== NODES ===
+NAME       STATUS   ROLES           AGE   VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION             CONTAINER-RUNTIME
+talentai   Ready    control-plane   8h    v1.37.0   192.168.49.2   <none>        Debian GNU/Linux 12 (bookworm)   7.0.0-42-generic (amd64)   containerd://2.3.4
+=== TALENTAI WORKLOADS ===
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                                                        SELECTOR
+deployment.apps/talentai   1/1     1            1           7h46m   talentai     fedimriri/talentai:597d0348d7175685a920f7d3d5268a59f78f0491   app=talentai
+
+NAME                            READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+pod/talentai-7b7c45bd44-xgp5f   1/1     Running   0          29m   10.244.0.16   talentai   <none>           <none>
+
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE     SELECTOR
+service/talentai   ClusterIP   10.105.41.156   <none>        80/TCP    7h46m   app=talentai
+
+NAME                                 CLASS   HOSTS            ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/talentai   nginx   talentai.local   192.168.49.2   80      7h46m
+
+NAME                                           REFERENCE             TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/talentai   Deployment/talentai   cpu: 4%/70%   1         3         1          6h52m
+=== CONFIGURATION RESOURCE NAMES ===
+KIND        NAME
+ConfigMap   kube-root-ca.crt
+ConfigMap   talentai-config
+Secret      sh.helm.release.v1.talentai.v10
+Secret      sh.helm.release.v1.talentai.v11
+Secret      sh.helm.release.v1.talentai.v2
+Secret      sh.helm.release.v1.talentai.v3
+Secret      sh.helm.release.v1.talentai.v4
+Secret      sh.helm.release.v1.talentai.v5
+Secret      sh.helm.release.v1.talentai.v6
+Secret      sh.helm.release.v1.talentai.v7
+Secret      sh.helm.release.v1.talentai.v8
+Secret      sh.helm.release.v1.talentai.v9
+Secret      talentai-runtime
+=== HELM RELEASES ===
+NAME    	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART         	APP VERSION
+talentai	talentai 	11      	2026-11-09 02:08:08.580833849 +0100 CET	deployed	talentai-0.1.0	1.0        
+=== MONITORING WORKLOADS ===
+NAME                                READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS          IMAGES                           SELECTOR
+deployment.apps/blackbox-exporter   1/1     1            1           6h57m   blackbox-exporter   prom/blackbox-exporter:v0.27.0   app=blackbox-exporter
+deployment.apps/grafana             1/1     1            1           6h57m   grafana             grafana/grafana:12.0.0           app=grafana
+deployment.apps/prometheus          1/1     1            1           6h57m   prometheus          prom/prometheus:v3.5.0           app=prometheus
+
+NAME                                    READY   STATUS    RESTARTS        AGE     IP           NODE       NOMINATED NODE   READINESS GATES
+pod/blackbox-exporter-8858675c6-mfhvl   1/1     Running   1 (3h13m ago)   6h57m   10.244.0.3   talentai   <none>           <none>
+pod/grafana-59f79b9c7c-2gvkq            1/1     Running   1 (3h13m ago)   6h56m   10.244.0.4   talentai   <none>           <none>
+pod/prometheus-657668b6c5-zvbt6         1/1     Running   1 (3h13m ago)   6h57m   10.244.0.7   talentai   <none>           <none>
+
+NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE     SELECTOR
+service/blackbox-exporter   ClusterIP   10.111.129.114   <none>        9115/TCP   6h57m   app=blackbox-exporter
+service/grafana             ClusterIP   10.102.23.93     <none>        3000/TCP   6h57m   app=grafana
+service/prometheus          ClusterIP   10.99.244.172    <none>        9090/TCP   6h57m   app=prometheus

@@ -1,0 +1,6 @@
+NAME: talentai
+LAST DEPLOYED: Mon Nov  9 00:17:25 2026
+NAMESPACE: talentai
+STATUS: deployed
+REVISION: 8
+TEST SUITE: None
