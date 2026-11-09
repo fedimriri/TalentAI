@@ -1,0 +1,21 @@
+---
+- name: Validate local TalentAI deployment tools
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  tasks:
+    - name: Check required tools
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - docker --version
+        - kubectl version --client
+        - minikube version
+        - helm version --short
+        - terraform version
+      changed_when: false
+    - name: Check Docker daemon
+      ansible.builtin.command: docker info --format '{{"{{"}}.ServerVersion{{"}}"}}'
+      changed_when: false
+    - name: Report available memory
+      ansible.builtin.debug:
+        msg: "Available memory {{ ansible_facts.memfree_mb }} MiB"

@@ -25,3 +25,6 @@ __pycache__/
 Dockerfile.backup
 *.lscache
 monitoring/.grafana-admin-password
+Dockerfile.before-security-fix
+TalentAI.csproj.backup
+TalentAI.csproj.before-updates

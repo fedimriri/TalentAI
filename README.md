@@ -262,3 +262,39 @@ Contributions are welcome! Please follow these guidelines:
 <p align="center">
   <sub>⭐ Star this repo if you find it useful!</sub>
 </p>
+
+---
+
+## TalentAI DevOps deployment
+
+The application runs as a .NET 10 container in the `talentai` Minikube profile. NGINX Ingress routes `talentai.local` to a ClusterIP Service and the Helm-managed Deployment. MongoDB Atlas is the existing external database. Terraform manages only the `talentai` namespace; Ansible validates local prerequisites. Prometheus, blackbox exporter and Grafana run in the `monitoring` namespace.
+
+### Prerequisites and private configuration
+
+Use Docker, kubectl, Minikube, Helm, Terraform, Ansible and .NET 10 on the Ubuntu host. Select Kubernetes context `talentai` before any cluster command. Keep the Atlas URI, Groq key, email credentials and Grafana password outside Git. `appsettings.json` and `appsettings.container.json` must contain no live credentials. The Kubernetes Secret `talentai-runtime` supplies the Atlas URI. A historical email password was exposed in public Git history and must be rotated outside the repository; do not reuse it.
+
+### Local validation and deployment
+
+```bash
+ansible-playbook -i localhost, infrastructure/ansible/prepare.yml
+terraform -chdir=infrastructure/terraform fmt -check
+terraform -chdir=infrastructure/terraform validate
+helm lint helm/talentai
+kubectl config current-context
+minikube status -p talentai
+kubectl -n talentai get deployment,pods,service,ingress,hpa
+```
+
+The existing namespace and Helm release are already deployed. Do not reapply Terraform or reinstall Minikube merely to run these checks. For a private Atlas Compose check, use `docker compose -f compose.atlas.yaml up --no-build -d talentai`, then request `/health/live` and `/health/ready` on port 5000. The readiness endpoint pings Atlas.
+
+### Docker Hub publishing and GitHub Actions
+
+The image repository is `fedimriri/talentai`. `scripts/publish-image.sh` supports manual timestamp-tagged publication after a HIGH/CRITICAL Trivy scan. GitHub Actions CI uses the existing `talentai-host-runner` and tags each image with the full commit SHA. It restores and builds .NET, reports absence of test projects as a warning, fails on NuGet vulnerability findings or audit errors, builds the Docker image, requires a clean Trivy HIGH/CRITICAL result, then publishes to Docker Hub with `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets. The new image-publishing CI path is pending a real GitHub run.
+
+Manual CD accepts that full SHA tag on the same host runner. It checks context `talentai`, pulls and loads the image into Minikube, runs `scripts/deploy-local.sh`, waits for Helm rollout, checks the Ingress homepage and health endpoints, and uploads non-secret evidence. The CD workflow remains unverified until it is reviewed, committed and run on GitHub. Do not expose the local Kubernetes API publicly.
+
+### Monitoring and autoscaling
+
+Prometheus, blackbox exporter and Grafana are deployed as a small local stack. Access them through `kubectl -n monitoring port-forward service/prometheus 9090:9090` and `kubectl -n monitoring port-forward service/grafana 3000:3000`. The `TalentAI Overview` dashboard shows availability, CPU and memory. Metrics Server supplies HPA CPU metrics. A load test in `scripts/test-hpa.sh` demonstrated scaling from one to three replicas; the deployment later returned to one. This does not prove functional multi-replica use: sessions, ASP.NET Data Protection keys and CV files remain local to pods, and Minikube has one node.
+
+For local Ingress access, get the current IP with `minikube ip -p talentai`, then run `curl --noproxy '*' --resolve talentai.local:80:MINIKUBE_IP http://talentai.local/health/ready` after replacing `MINIKUBE_IP`. A failed readiness check should be investigated through pod events and logs without printing Secrets. Save command outputs and genuine screenshots under `results/` and `labs/talentai-deployment/` for the French compte-rendu.

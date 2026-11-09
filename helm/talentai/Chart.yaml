@@ -1,0 +1,6 @@
+apiVersion: v2
+name: talentai
+description: TalentAI application on Minikube with external MongoDB Atlas
+type: application
+version: 0.1.0
+appVersion: "1.0"

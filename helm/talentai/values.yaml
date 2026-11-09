@@ -1,0 +1,25 @@
+replicaCount: 1
+image:
+  repository: talentai
+  tag: local
+  pullPolicy: IfNotPresent
+secretName: talentai-runtime
+imagePullSecrets: []
+service:
+  port: 80
+ingress:
+  enabled: true
+  className: nginx
+  host: talentai.local
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+hpa:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  cpuUtilization: 70

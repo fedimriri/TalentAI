@@ -1,0 +1,13 @@
+services:
+  talentai:
+    image: talentai:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    ports:
+      - "5000:5000"
+    restart: unless-stopped

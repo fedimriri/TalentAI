@@ -1,0 +1,84 @@
+name: Deploy TalentAI to Minikube
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Published Docker Hub image tag"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: talentai-local-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, talentai-local]
+    environment: local-minikube
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate image tag
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        shell: bash
+        run: |
+          [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]
+
+      - name: Verify cluster
+        run: |
+          set -euo pipefail
+          test "$(kubectl config current-context)" = "talentai"
+          minikube status -p talentai
+          kubectl get namespace talentai
+
+      - name: Load published image into Minikube
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="fedimriri/talentai:$IMAGE_TAG"
+          docker pull "$IMAGE"
+          minikube -p talentai image load "$IMAGE"
+
+      - name: Deploy published image
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          bash scripts/deploy-local.sh "$IMAGE_TAG"
+
+      - name: Verify application
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p cd-evidence
+          kubectl get deployments,pods,service,ingress,hpa -n talentai -o wide | tee cd-evidence/resources.txt
+          kubectl rollout status deployment/talentai \
+            -n talentai --timeout=180s | tee cd-evidence/rollout.txt
+          helm status talentai -n talentai | tee cd-evidence/helm-status.txt
+          INGRESS_IP="$(minikube ip -p talentai)"
+          for path in / /health/live /health/ready; do
+            code="$(curl --noproxy '*' --resolve "talentai.local:80:$INGRESS_IP" \
+              --silent --show-error --output /dev/null --write-out '%{http_code}' \
+              "http://talentai.local$path")"
+            printf '%s HTTP %s\n' "$path" "$code" | tee -a cd-evidence/health.txt
+            test "$code" = 200
+          done
+
+      - name: Save deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: talentai-deployment-${{ inputs.image_tag }}
+          path: cd-evidence/
+          if-no-files-found: warn

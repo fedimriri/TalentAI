@@ -1,0 +1,5 @@
+# TalentAI local monitoring
+
+`monitoring/manifests/stack.yaml` defines a small Prometheus, blackbox exporter and Grafana stack in the `monitoring` namespace. Prometheus scrapes its own metrics, TalentAI's Atlas-aware readiness through blackbox exporter, and Kubernetes cAdvisor metrics through the API proxy. Retention is 24 hours in ephemeral storage. Grafana provisions the `TalentAI Overview` dashboard with availability, CPU and memory panels. The private Grafana password file is ignored by Git and loaded into a Kubernetes Secret; never print or commit it.
+
+Verified deployment evidence is in `labs/talentai-deployment/results/monitoring-verification.json`: three scrape targets Up, availability value 1, Grafana HTTP 200 and a provisioned dashboard. Access via `kubectl -n monitoring port-forward service/prometheus 9090:9090` and `kubectl -n monitoring port-forward service/grafana 3000:3000`. Metrics Server is enabled separately for HPA; `kubectl -n talentai get hpa` and `kubectl -n talentai top pod` show its current values. The one-node Minikube cluster is a local demonstration, not high availability.
