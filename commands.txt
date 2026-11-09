@@ -1,0 +1,290 @@
+==================================================
+1. START THE ENVIRONMENT
+==================================================
+
+go to the project [READ-ONLY] :
+cd /home/fadi/Desktop/Tek-up/devops/final-projet/TalentAI
+
+check Docker [READ-ONLY] :
+docker info --format '{{.ServerVersion}}'
+
+check Minikube [READ-ONLY] :
+minikube status -p talentai
+
+start existing Minikube only if stopped [MODIFIES] :
+minikube start -p talentai --driver=docker
+
+check Kubernetes context and nodes [READ-ONLY] :
+kubectl config current-context
+kubectl get nodes -o wide
+
+check application and monitoring Pods [READ-ONLY] :
+kubectl get pods -n talentai
+kubectl get pods -n monitoring
+
+check whether the runner is already active [READ-ONLY] :
+pgrep -af 'Runner.Listener|Runner.Worker'
+
+start the existing runner only if inactive [MODIFIES] :
+cd /home/fadi/Desktop/Tek-up/devops/final-projet/github-runners/talentai-host-runner
+./run.sh
+
+return to the project [READ-ONLY] :
+cd /home/fadi/Desktop/Tek-up/devops/final-projet/TalentAI
+
+==================================================
+2. GIT AND GITHUB
+==================================================
+
+check status [READ-ONLY] :
+git status --short
+
+check branch [READ-ONLY] :
+git branch --show-current
+
+show full commit SHA [READ-ONLY] :
+git rev-parse HEAD
+
+stage only the reviewed README change, if intended [MODIFIES] :
+git add -- README.md
+
+review staged files [READ-ONLY] :
+git diff --cached --name-only
+git diff --cached --check
+
+commit only after review [MODIFIES — INTENTIONAL] :
+git commit -m "docs: update TalentAI presentation notes"
+
+push main only after review [MODIFIES — INTENTIONAL] :
+git push origin main
+
+==================================================
+3. AUTOMATIC CI
+==================================================
+
+show CI workflow [READ-ONLY] :
+sed -n '1,150p' .github/workflows/ci.yml
+
+show commit SHA [READ-ONLY] :
+git rev-parse HEAD
+
+check CI runs if GitHub CLI is installed [READ-ONLY] :
+command -v gh && gh run list --workflow ci.yml --limit 5
+
+open GitHub Actions CI in a browser [READ-ONLY] :
+https://github.com/fedimriri/TalentAI/actions/workflows/ci.yml
+
+==================================================
+4. DOCKER
+==================================================
+
+list images [READ-ONLY] :
+docker image ls
+
+list containers [READ-ONLY] :
+docker ps -a
+
+inspect the deployed image reference without environment variables [READ-ONLY] :
+kubectl get deployment talentai -n talentai -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+
+inspect local image layers for the current Git SHA if present [READ-ONLY] :
+docker image inspect "fedimriri/talentai:$(git rev-parse HEAD)" --format '{{.Id}}' 2>/dev/null || true
+
+check Atlas Compose configuration without printing secrets [READ-ONLY] :
+docker compose -f compose.atlas.yaml config --quiet
+
+show recent container logs; review before displaying [READ-ONLY] :
+docker logs --tail 40 talentai 2>&1
+
+==================================================
+5. CD DEPLOYMENT
+==================================================
+
+show the full image SHA from successful CI [READ-ONLY] :
+command -v gh && gh run list --workflow ci.yml --limit 5 --json databaseId,headSha,conclusion
+
+show the image currently deployed [READ-ONLY] :
+kubectl get deployment talentai -n talentai -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+
+show CD workflow [READ-ONLY] :
+sed -n '1,115p' .github/workflows/deploy-local.yml
+
+open manual CD workflow; paste the full 40-character SHA as image_tag [MODIFIES — INTENTIONAL] :
+https://github.com/fedimriri/TalentAI/actions/workflows/deploy-local.yml
+
+check CD runs if GitHub CLI is installed [READ-ONLY] :
+command -v gh && gh run list --workflow deploy-local.yml --limit 5
+
+verify Deployment after an approved CD run [READ-ONLY] :
+kubectl rollout status deployment/talentai -n talentai --timeout=180s
+
+==================================================
+6. KUBERNETES
+==================================================
+
+show nodes and namespaces [READ-ONLY] :
+kubectl get nodes -o wide
+kubectl get namespaces
+
+show Deployments and ReplicaSets [READ-ONLY] :
+kubectl get deployments -n talentai -o wide
+kubectl get replicasets -n talentai
+
+show Pods and Services [READ-ONLY] :
+kubectl get pods -n talentai -o wide
+kubectl get services -n talentai
+
+show Ingress and ConfigMaps [READ-ONLY] :
+kubectl get ingress -n talentai
+kubectl get configmaps -n talentai
+
+show Secret metadata only; never print Secret values [READ-ONLY] :
+kubectl get secrets -n talentai
+
+show readiness and rollout [READ-ONLY] :
+kubectl get pods -n talentai
+kubectl rollout status deployment/talentai -n talentai --timeout=180s
+
+show recent application logs; review before displaying [READ-ONLY] :
+kubectl logs deployment/talentai -n talentai --tail=40
+
+==================================================
+7. HELM
+==================================================
+
+show installed release [READ-ONLY] :
+helm list -n talentai
+helm status talentai -n talentai
+
+show chart and default values [READ-ONLY] :
+ls helm/talentai/templates
+cat helm/talentai/Chart.yaml
+cat helm/talentai/values.yaml
+
+show current release values and history [READ-ONLY] :
+helm get values talentai -n talentai
+helm history talentai -n talentai
+
+show deployed image [READ-ONLY] :
+kubectl get deployment talentai -n talentai -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+
+validate Helm chart [READ-ONLY] :
+helm lint helm/talentai
+
+==================================================
+8. MANUAL REPLICAS
+==================================================
+
+show Deployment [READ-ONLY] :
+kubectl get deployment talentai -n talentai
+
+watch Pods; Ctrl+C to stop [READ-ONLY] :
+kubectl get pods -n talentai -w
+
+manual scale; DO NOT RUN on TalentAI without reviewing sessions and local CV files; HPA may override [MODIFIES] :
+kubectl scale deployment/talentai --replicas=2 -n talentai
+
+show ReplicaSets [READ-ONLY] :
+kubectl get replicasets -n talentai
+
+==================================================
+9. AUTOMATIC REPLICAS WITH HPA
+==================================================
+
+show HPA: configured 1–3 replicas, 70% CPU target [READ-ONLY] :
+kubectl get hpa -n talentai
+kubectl describe hpa talentai -n talentai
+
+show live resource usage [READ-ONLY] :
+kubectl top pods -n talentai
+kubectl top nodes
+
+watch HPA and Pods in separate terminals; Ctrl+C to stop [READ-ONLY] :
+kubectl get hpa talentai -n talentai -w
+kubectl get pods -n talentai -w
+
+show recorded scaling evidence; no load test [READ-ONLY] :
+cat results/34-hpa-before.txt
+tail -40 results/34-hpa-load-test.txt
+cat results/34-hpa-after.txt
+
+==================================================
+10. TERRAFORM
+==================================================
+
+go to Terraform configuration [READ-ONLY] :
+cd /home/fadi/Desktop/Tek-up/devops/final-projet/TalentAI/infrastructure/terraform
+
+show configuration and version [READ-ONLY] :
+cat main.tf
+terraform version
+
+check formatting and validate [READ-ONLY] :
+terraform fmt -check
+terraform validate
+
+show plan only; no apply [READ-ONLY] :
+terraform plan -no-color
+
+return to project [READ-ONLY] :
+cd /home/fadi/Desktop/Tek-up/devops/final-projet/TalentAI
+
+==================================================
+11. ANSIBLE
+==================================================
+
+show existing prerequisite playbook [READ-ONLY] :
+cat infrastructure/ansible/prepare.yml
+
+check syntax with localhost inventory [READ-ONLY] :
+ansible-playbook -i localhost, -c local infrastructure/ansible/prepare.yml --syntax-check
+
+run prerequisite validation; playbook declares no changes [READ-ONLY] :
+ansible-playbook -i localhost, -c local infrastructure/ansible/prepare.yml
+
+==================================================
+12. MONITORING
+==================================================
+
+show monitoring Pods and Services [READ-ONLY] :
+kubectl get pods,services -n monitoring
+
+verify Prometheus and Grafana from recorded evidence [READ-ONLY] :
+cat results/50-monitoring-verification.txt
+
+open Prometheus locally; Ctrl+C to stop [MODIFIES LOCAL PORT] :
+kubectl -n monitoring port-forward service/prometheus 9090:9090
+
+open Grafana locally in another terminal; Ctrl+C to stop [MODIFIES LOCAL PORT] :
+kubectl -n monitoring port-forward service/grafana 3000:3000
+
+verify local interfaces after port-forward [READ-ONLY] :
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:9090/-/ready
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/api/health
+
+three application URLs via Ingress [READ-ONLY] :
+http://talentai.local/
+http://talentai.local/health/live
+http://talentai.local/health/ready
+
+check Atlas-aware application readiness [READ-ONLY] :
+INGRESS_IP="$(minikube ip -p talentai)"
+curl --noproxy '*' --resolve "talentai.local:80:$INGRESS_IP" -s -o /dev/null -w '%{http_code}\n' http://talentai.local/health/ready
+
+==================================================
+13. FINAL VERIFICATION
+==================================================
+
+verify deployed image [READ-ONLY] :
+kubectl get deployment talentai -n talentai -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+
+verify Helm status [READ-ONLY] :
+helm status talentai -n talentai
+
+verify Pod readiness and HPA [READ-ONLY] :
+kubectl get pods -n talentai
+kubectl get hpa -n talentai
+
+verify HTTP 200 readiness [READ-ONLY] :
+INGRESS_IP="$(minikube ip -p talentai)"
+curl --noproxy '*' --resolve "talentai.local:80:$INGRESS_IP" -s -o /dev/null -w '%{http_code}\n' http://talentai.local/health/ready
